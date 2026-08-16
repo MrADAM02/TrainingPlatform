@@ -1,0 +1,21 @@
+## .NET
+bin/
+obj/
+*.user
+.vs/
+
+## Node / Nuxt
+node_modules/
+.nuxt/
+.output/
+.data/
+dist/
+
+## Env / secrets
+.env
+.env.local
+
+## Editor
+.idea/
+.vscode/*
+!.vscode/extensions.json
