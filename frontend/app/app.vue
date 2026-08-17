@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import * as uiLocales from '@nuxt/ui/locale'
+
+const { locale } = useI18n()
 const head = useLocaleHead()
 
 useHead(() => ({
@@ -7,10 +10,14 @@ useHead(() => ({
     dir: head.value.htmlAttrs?.dir,
   },
 }))
+
+const uiLocale = computed(() => uiLocales[locale.value as keyof typeof uiLocales] ?? uiLocales.en)
 </script>
 
 <template>
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
+  <UApp :locale="uiLocale">
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </UApp>
 </template>

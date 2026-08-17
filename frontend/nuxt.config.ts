@@ -8,7 +8,9 @@ export default defineNuxtConfig({
     port: 3010,
   },
 
-  modules: ['@pinia/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
+  modules: ['@pinia/nuxt', '@nuxtjs/i18n', '@nuxt/eslint', '@nuxt/ui'],
+
+  css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
     public: {

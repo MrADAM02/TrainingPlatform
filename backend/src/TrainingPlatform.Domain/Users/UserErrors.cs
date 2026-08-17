@@ -19,4 +19,12 @@ public static class UserErrors
     public static readonly Error InvalidOrExpiredRefreshToken = Error.Unauthorized(
         "Users.InvalidOrExpiredRefreshToken",
         "The refresh token is invalid or has expired. Please log in again.");
+
+    public static Error NotFound(Guid userId) => Error.NotFound(
+        "Users.NotFound",
+        $"User '{userId}' was not found.");
+
+    public static readonly Error CannotActOnSelf = Error.Validation(
+        "Users.CannotActOnSelf",
+        "You cannot perform this action on your own account.");
 }

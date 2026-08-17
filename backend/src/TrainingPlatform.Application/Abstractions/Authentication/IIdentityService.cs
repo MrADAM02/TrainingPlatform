@@ -25,4 +25,28 @@ public interface IIdentityService
         CancellationToken cancellationToken);
 
     Task<Result> LogoutAsync(string refreshToken, CancellationToken cancellationToken);
+
+    Task<Result<PaginatedList<UserSummary>>> GetUsersAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken);
+
+    Task<Result<UserSummary>> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken);
+
+    Task<Result> UpdateUserAsync(Guid userId, string fullName, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deactivating a user also revokes their active refresh tokens, so the change takes effect
+    /// immediately rather than waiting for their session to expire.
+    /// </summary>
+    Task<Result> SetUserActiveStatusAsync(Guid userId, bool isActive, CancellationToken cancellationToken);
+
+    Task<Result> DeleteUserAsync(Guid userId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Admin-forced password reset (REQ-AUTH-05). Generates a new temporary password and revokes
+    /// the user's active sessions. There is no email delivery yet, so the temporary password is
+    /// returned to the caller (the admin) to relay out of band.
+    /// </summary>
+    Task<Result<string>> AdminResetPasswordAsync(Guid userId, CancellationToken cancellationToken);
 }

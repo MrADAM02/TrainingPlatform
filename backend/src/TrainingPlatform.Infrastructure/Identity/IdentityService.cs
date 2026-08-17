@@ -1,7 +1,10 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using TrainingPlatform.Application.Abstractions.Activity;
 using TrainingPlatform.Application.Abstractions.Authentication;
+using TrainingPlatform.Domain.Activity;
 using TrainingPlatform.Domain.Common;
 using TrainingPlatform.Domain.Users;
 using TrainingPlatform.Infrastructure.Database;
@@ -12,6 +15,7 @@ public sealed class IdentityService(
     UserManager<ApplicationUser> userManager,
     ApplicationDbContext dbContext,
     ITokenService tokenService,
+    IActivityLogService activityLogService,
     IOptions<JwtOptions> jwtOptions) : IIdentityService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
@@ -70,6 +74,9 @@ public sealed class IdentityService(
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
+        await activityLogService.LogAsync(
+            user.Id, ActivityActions.UserLoggedIn, "User", user.Id.ToString(), cancellationToken);
+
         return tokens;
     }
 
@@ -124,6 +131,133 @@ public sealed class IdentityService(
         return Result.Success();
     }
 
+    public async Task<Result<PaginatedList<UserSummary>>> GetUsersAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var query = dbContext.Users.AsNoTracking().OrderByDescending(u => u.CreatedAtUtc);
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var pagedUsers = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        var userIds = pagedUsers.Select(u => u.Id).ToList();
+
+        var rolesByUser = await (
+            from userRole in dbContext.UserRoles.AsNoTracking()
+            join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
+            where userIds.Contains(userRole.UserId)
+            select new { userRole.UserId, RoleName = role.Name! }
+        ).ToListAsync(cancellationToken);
+
+        var items = pagedUsers
+            .Select(u => new UserSummary(
+                u.Id,
+                u.Email!,
+                u.FullName,
+                rolesByUser.Where(r => r.UserId == u.Id).Select(r => r.RoleName).ToList(),
+                u.IsActive,
+                u.CreatedAtUtc,
+                u.LastLoginAtUtc))
+            .ToList();
+
+        return new PaginatedList<UserSummary>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+        };
+    }
+
+    public async Task<Result<UserSummary>> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return Result.Failure<UserSummary>(UserErrors.NotFound(userId));
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+
+        return new UserSummary(user.Id, user.Email!, user.FullName, [.. roles], user.IsActive, user.CreatedAtUtc, user.LastLoginAtUtc);
+    }
+
+    public async Task<Result> UpdateUserAsync(Guid userId, string fullName, CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return Result.Failure(UserErrors.NotFound(userId));
+        }
+
+        user.FullName = fullName;
+        var result = await userManager.UpdateAsync(user);
+
+        return result.Succeeded ? Result.Success() : Result.Failure(ToError(result));
+    }
+
+    public async Task<Result> SetUserActiveStatusAsync(Guid userId, bool isActive, CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return Result.Failure(UserErrors.NotFound(userId));
+        }
+
+        user.IsActive = isActive;
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            return Result.Failure(ToError(result));
+        }
+
+        if (!isActive)
+        {
+            await RevokeAllActiveTokensAsync(userId, cancellationToken);
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> DeleteUserAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return Result.Failure(UserErrors.NotFound(userId));
+        }
+
+        var result = await userManager.DeleteAsync(user);
+
+        return result.Succeeded ? Result.Success() : Result.Failure(ToError(result));
+    }
+
+    public async Task<Result<string>> AdminResetPasswordAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return Result.Failure<string>(UserErrors.NotFound(userId));
+        }
+
+        var temporaryPassword = GenerateTemporaryPassword();
+
+        var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await userManager.ResetPasswordAsync(user, resetToken, temporaryPassword);
+        if (!result.Succeeded)
+        {
+            return Result.Failure<string>(ToError(result));
+        }
+
+        await RevokeAllActiveTokensAsync(userId, cancellationToken);
+
+        return temporaryPassword;
+    }
+
     private async Task<AuthTokensResponse> IssueTokensAsync(
         ApplicationUser user,
         IList<string> roles,
@@ -159,6 +293,14 @@ public sealed class IdentityService(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static string GenerateTemporaryPassword()
+    {
+        var randomPart = Convert.ToBase64String(RandomNumberGenerator.GetBytes(9))
+            .Replace("+", "A").Replace("/", "B").Replace("=", "");
+
+        return $"Tmp-{randomPart}1!";
     }
 
     private static Error ToError(IdentityResult result)

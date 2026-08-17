@@ -1,19 +1,27 @@
 <script setup lang="ts">
+import type { FormError, FormSubmitEvent } from '@nuxt/ui'
+
 const { t } = useI18n()
 const authStore = useAuthStore()
 const router = useRouter()
 
-const email = ref('')
-const password = ref('')
+const state = reactive({ email: '', password: '' })
 const isSubmitting = ref(false)
 const errorMessage = ref<string | null>(null)
 
-async function handleSubmit() {
+function validate(formState: typeof state): FormError[] {
+  const errors: FormError[] = []
+  if (!formState.email) errors.push({ name: 'email', message: t('admin.users.email') })
+  if (!formState.password) errors.push({ name: 'password', message: t('auth.login.password') })
+  return errors
+}
+
+async function handleSubmit(event: FormSubmitEvent<typeof state>) {
   errorMessage.value = null
   isSubmitting.value = true
 
   try {
-    await authStore.login(email.value, password.value)
+    await authStore.login(event.data.email, event.data.password)
     await router.push('/dashboard')
   }
   catch {
@@ -26,53 +34,32 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="login-page">
-    <form class="login-form" @submit.prevent="handleSubmit">
-      <h1>{{ t('auth.login.title') }}</h1>
+  <div class="flex justify-center pt-16">
+    <UCard class="w-full max-w-sm">
+      <template #header>
+        <h1 class="text-lg font-semibold">
+          {{ t('auth.login.title') }}
+        </h1>
+      </template>
 
-      <label>
-        {{ t('auth.login.email') }}
-        <input v-model="email" type="email" name="email" autocomplete="username" required>
-      </label>
+      <UForm :state="state" :validate="validate" @submit="handleSubmit">
+        <div class="space-y-4">
+          <UFormField :label="t('auth.login.email')" name="email">
+            <UInput v-model="state.email" type="email" autocomplete="username" class="w-full" />
+          </UFormField>
 
-      <label>
-        {{ t('auth.login.password') }}
-        <input v-model="password" type="password" name="password" autocomplete="current-password" required>
-      </label>
+          <UFormField :label="t('auth.login.password')" name="password">
+            <UInput v-model="state.password" type="password" autocomplete="current-password" class="w-full" />
+          </UFormField>
 
-      <p v-if="errorMessage" class="error" role="alert">
-        {{ errorMessage }}
-      </p>
+          <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" />
 
-      <button type="submit" :disabled="isSubmitting">
-        {{ isSubmitting ? t('auth.login.submitting') : t('auth.login.submit') }}
-      </button>
-    </form>
+          <UButton
+            type="submit" block :loading="isSubmitting"
+            :label="isSubmitting ? t('auth.login.submitting') : t('auth.login.submit')"
+          />
+        </div>
+      </UForm>
+    </UCard>
   </div>
 </template>
-
-<style scoped>
-.login-page {
-  display: flex;
-  justify-content: center;
-  padding-top: 4rem;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-  max-width: 20rem;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.error {
-  color: #b91c1c;
-}
-</style>

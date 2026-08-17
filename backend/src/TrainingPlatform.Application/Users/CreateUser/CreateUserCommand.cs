@@ -1,6 +1,8 @@
 using FluentValidation;
+using TrainingPlatform.Application.Abstractions.Activity;
 using TrainingPlatform.Application.Abstractions.Authentication;
 using TrainingPlatform.Application.Abstractions.Messaging;
+using TrainingPlatform.Domain.Activity;
 using TrainingPlatform.Domain.Common;
 using TrainingPlatform.Domain.Users;
 
@@ -28,9 +30,22 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
     }
 }
 
-public sealed class CreateUserCommandHandler(IIdentityService identityService)
-    : ICommandHandler<CreateUserCommand, Guid>
+public sealed class CreateUserCommandHandler(
+    IIdentityService identityService,
+    IActivityLogService activityLog,
+    IUserContext currentUser) : ICommandHandler<CreateUserCommand, Guid>
 {
-    public Task<Result<Guid>> Handle(CreateUserCommand command, CancellationToken cancellationToken) =>
-        identityService.CreateUserAsync(command.Email, command.FullName, command.Password, command.Role, cancellationToken);
+    public async Task<Result<Guid>> Handle(CreateUserCommand command, CancellationToken cancellationToken)
+    {
+        var result = await identityService.CreateUserAsync(
+            command.Email, command.FullName, command.Password, command.Role, cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            await activityLog.LogAsync(
+                currentUser.UserId, ActivityActions.UserCreated, "User", result.Value.ToString(), cancellationToken);
+        }
+
+        return result;
+    }
 }

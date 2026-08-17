@@ -2,7 +2,11 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using TrainingPlatform.Api.Endpoints.Activity;
 using TrainingPlatform.Api.Endpoints.Auth;
+using TrainingPlatform.Api.Endpoints.Courses;
+using TrainingPlatform.Api.Endpoints.Documents;
+using TrainingPlatform.Api.Endpoints.Modules;
 using TrainingPlatform.Api.Endpoints.Users;
 using TrainingPlatform.Application;
 using TrainingPlatform.Infrastructure;
@@ -78,5 +82,9 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
+app.MapActivityEndpoints();
+app.MapCourseEndpoints();
+app.MapModuleEndpoints();
+app.MapDocumentEndpoints();
 
 app.Run();

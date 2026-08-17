@@ -5,7 +5,10 @@
   "nav": {
     "dashboard": "Dashboard",
     "admin": "Admin",
-    "trainer": "Trainer",
+    "adminUsers": "Users",
+    "adminActivity": "Activity Log",
+    "trainer": "My Courses",
+    "courses": "Courses",
     "logout": "Log out"
   },
   "auth": {
@@ -22,7 +25,118 @@
     "welcome": "Welcome, {name}",
     "role": "Role: {role}"
   },
+  "admin": {
+    "hub": {
+      "title": "Administration",
+      "usersDescription": "Create, edit, deactivate, and delete user accounts.",
+      "activityDescription": "View a log of logins and admin actions."
+    },
+    "users": {
+      "title": "Users",
+      "create": "Create user",
+      "edit": "Edit user",
+      "email": "Email",
+      "fullName": "Full name",
+      "password": "Password",
+      "role": "Role",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "lastLogin": "Last login",
+      "never": "Never",
+      "actions": "Actions",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "resetPassword": "Reset password",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirmDeactivateTitle": "Deactivate user?",
+      "confirmDeactivateBody": "They will be logged out immediately and unable to sign in until reactivated.",
+      "confirmDeleteTitle": "Delete user?",
+      "confirmDeleteBody": "This permanently removes the account. This cannot be undone.",
+      "confirmResetTitle": "Reset password?",
+      "confirmResetBody": "This generates a new temporary password and signs the user out everywhere.",
+      "temporaryPasswordTitle": "Temporary password",
+      "temporaryPasswordBody": "Share this with the user through a secure channel — it will not be shown again.",
+      "createSuccess": "User created.",
+      "updateSuccess": "User updated.",
+      "deleteSuccess": "User deleted.",
+      "activateSuccess": "User activated.",
+      "deactivateSuccess": "User deactivated.",
+      "close": "Close"
+    },
+    "activity": {
+      "title": "Activity Log",
+      "timestamp": "Timestamp",
+      "actor": "Actor",
+      "action": "Action",
+      "entity": "Entity",
+      "ipAddress": "IP address"
+    }
+  },
+  "courses": {
+    "manageTitle": "My Courses",
+    "browseTitle": "Courses",
+    "create": "Create course",
+    "edit": "Edit course",
+    "courseTitle": "Title",
+    "description": "Description",
+    "status": "Status",
+    "published": "Published",
+    "draft": "Draft",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "manage": "Manage",
+    "view": "View",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "empty": "No courses yet.",
+    "confirmDeleteTitle": "Delete course?",
+    "confirmDeleteBody": "This permanently removes the course, its modules, and its documents. This cannot be undone.",
+    "createSuccess": "Course created.",
+    "updateSuccess": "Course updated.",
+    "deleteSuccess": "Course deleted.",
+    "publishSuccess": "Course published.",
+    "unpublishSuccess": "Course unpublished.",
+    "modules": {
+      "title": "Modules",
+      "create": "Add module",
+      "edit": "Edit module",
+      "moduleTitle": "Title",
+      "order": "Order",
+      "delete": "Delete",
+      "empty": "No modules yet.",
+      "confirmDeleteTitle": "Delete module?",
+      "confirmDeleteBody": "This removes the module and all its documents. This cannot be undone.",
+      "createSuccess": "Module added.",
+      "updateSuccess": "Module updated.",
+      "deleteSuccess": "Module deleted."
+    },
+    "documents": {
+      "title": "Documents",
+      "upload": "Upload",
+      "uploading": "Uploading...",
+      "download": "Download",
+      "delete": "Delete",
+      "empty": "No documents yet.",
+      "size": "Size",
+      "confirmDeleteTitle": "Delete document?",
+      "confirmDeleteBody": "This permanently removes the file. This cannot be undone.",
+      "uploadSuccess": "Document uploaded.",
+      "uploadError": "Upload failed.",
+      "deleteSuccess": "Document deleted."
+    }
+  },
+  "pagination": {
+    "pageOf": "Page {page} of {totalPages}"
+  },
   "common": {
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "error": "Something went wrong.",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   }
 }

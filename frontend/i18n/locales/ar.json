@@ -5,7 +5,10 @@
   "nav": {
     "dashboard": "لوحة التحكم",
     "admin": "الإدارة",
-    "trainer": "المدرب",
+    "adminUsers": "المستخدمون",
+    "adminActivity": "سجل النشاط",
+    "trainer": "دوراتي",
+    "courses": "الدورات",
     "logout": "تسجيل الخروج"
   },
   "auth": {
@@ -22,7 +25,118 @@
     "welcome": "مرحباً، {name}",
     "role": "الدور: {role}"
   },
+  "admin": {
+    "hub": {
+      "title": "الإدارة",
+      "usersDescription": "إنشاء المستخدمين وتعديلهم وإيقافهم وحذفهم.",
+      "activityDescription": "عرض سجل تسجيلات الدخول وإجراءات الإدارة."
+    },
+    "users": {
+      "title": "المستخدمون",
+      "create": "إنشاء مستخدم",
+      "edit": "تعديل المستخدم",
+      "email": "البريد الإلكتروني",
+      "fullName": "الاسم الكامل",
+      "password": "كلمة المرور",
+      "role": "الدور",
+      "status": "الحالة",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "lastLogin": "آخر تسجيل دخول",
+      "never": "أبداً",
+      "actions": "الإجراءات",
+      "activate": "تفعيل",
+      "deactivate": "إيقاف",
+      "resetPassword": "إعادة تعيين كلمة المرور",
+      "delete": "حذف",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "confirmDeactivateTitle": "إيقاف المستخدم؟",
+      "confirmDeactivateBody": "سيتم تسجيل خروجه فوراً ولن يتمكن من الدخول حتى إعادة تفعيله.",
+      "confirmDeleteTitle": "حذف المستخدم؟",
+      "confirmDeleteBody": "سيتم حذف الحساب نهائياً. لا يمكن التراجع عن هذا الإجراء.",
+      "confirmResetTitle": "إعادة تعيين كلمة المرور؟",
+      "confirmResetBody": "سيتم إنشاء كلمة مرور مؤقتة جديدة وتسجيل خروج المستخدم من جميع الجلسات.",
+      "temporaryPasswordTitle": "كلمة المرور المؤقتة",
+      "temporaryPasswordBody": "شارك هذه الكلمة مع المستخدم عبر قناة آمنة — لن تظهر مرة أخرى.",
+      "createSuccess": "تم إنشاء المستخدم.",
+      "updateSuccess": "تم تحديث المستخدم.",
+      "deleteSuccess": "تم حذف المستخدم.",
+      "activateSuccess": "تم تفعيل المستخدم.",
+      "deactivateSuccess": "تم إيقاف المستخدم.",
+      "close": "إغلاق"
+    },
+    "activity": {
+      "title": "سجل النشاط",
+      "timestamp": "الوقت",
+      "actor": "المستخدم",
+      "action": "الإجراء",
+      "entity": "الكيان",
+      "ipAddress": "عنوان IP"
+    }
+  },
+  "courses": {
+    "manageTitle": "دوراتي",
+    "browseTitle": "الدورات",
+    "create": "إنشاء دورة",
+    "edit": "تعديل الدورة",
+    "courseTitle": "العنوان",
+    "description": "الوصف",
+    "status": "الحالة",
+    "published": "منشورة",
+    "draft": "مسودة",
+    "publish": "نشر",
+    "unpublish": "إلغاء النشر",
+    "manage": "إدارة",
+    "view": "عرض",
+    "delete": "حذف",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "back": "رجوع",
+    "empty": "لا توجد دورات بعد.",
+    "confirmDeleteTitle": "حذف الدورة؟",
+    "confirmDeleteBody": "سيتم حذف الدورة ووحداتها ومستنداتها نهائياً. لا يمكن التراجع عن هذا الإجراء.",
+    "createSuccess": "تم إنشاء الدورة.",
+    "updateSuccess": "تم تحديث الدورة.",
+    "deleteSuccess": "تم حذف الدورة.",
+    "publishSuccess": "تم نشر الدورة.",
+    "unpublishSuccess": "تم إلغاء نشر الدورة.",
+    "modules": {
+      "title": "الوحدات",
+      "create": "إضافة وحدة",
+      "edit": "تعديل الوحدة",
+      "moduleTitle": "العنوان",
+      "order": "الترتيب",
+      "delete": "حذف",
+      "empty": "لا توجد وحدات بعد.",
+      "confirmDeleteTitle": "حذف الوحدة؟",
+      "confirmDeleteBody": "سيتم حذف الوحدة وجميع مستنداتها. لا يمكن التراجع عن هذا الإجراء.",
+      "createSuccess": "تمت إضافة الوحدة.",
+      "updateSuccess": "تم تحديث الوحدة.",
+      "deleteSuccess": "تم حذف الوحدة."
+    },
+    "documents": {
+      "title": "المستندات",
+      "upload": "رفع",
+      "uploading": "جاري الرفع...",
+      "download": "تنزيل",
+      "delete": "حذف",
+      "empty": "لا توجد مستندات بعد.",
+      "size": "الحجم",
+      "confirmDeleteTitle": "حذف المستند؟",
+      "confirmDeleteBody": "سيتم حذف الملف نهائياً. لا يمكن التراجع عن هذا الإجراء.",
+      "uploadSuccess": "تم رفع المستند.",
+      "uploadError": "فشل الرفع.",
+      "deleteSuccess": "تم حذف المستند."
+    }
+  },
+  "pagination": {
+    "pageOf": "صفحة {page} من {totalPages}"
+  },
   "common": {
-    "loading": "جاري التحميل..."
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ ما.",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
   }
 }
