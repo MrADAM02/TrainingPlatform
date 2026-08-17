@@ -75,6 +75,8 @@ public static class DependencyInjection
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.FromSeconds(30),
+                    RoleClaimType = "role",
+                    NameClaimType = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub,
                 };
             });
 

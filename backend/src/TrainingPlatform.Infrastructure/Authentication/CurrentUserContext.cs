@@ -22,5 +22,5 @@ public sealed class CurrentUserContext(IHttpContextAccessor httpContextAccessor)
     public bool IsAuthenticated => Principal?.Identity?.IsAuthenticated ?? false;
 
     public IReadOnlyCollection<string> Roles =>
-        Principal?.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray() ?? [];
+        Principal?.FindAll("role").Select(c => c.Value).ToArray() ?? [];
 }

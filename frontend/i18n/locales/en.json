@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "Training Platform"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "trainer": "Trainer",
+    "logout": "Log out"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "error": "Incorrect email or password."
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome, {name}",
+    "role": "Role: {role}"
+  },
+  "common": {
+    "loading": "Loading..."
+  }
+}
