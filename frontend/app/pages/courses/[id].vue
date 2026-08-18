@@ -47,12 +47,22 @@ async function downloadDocument(doc: DocumentSummary) {
   <div v-if="course">
     <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('courses.back')" to="/courses" class="mb-4" />
 
-    <h1 class="text-xl font-semibold mb-2">
-      {{ course.title }}
-    </h1>
-    <p class="text-muted mb-8">
+    <div class="flex items-center gap-2 mb-2">
+      <h1 class="text-xl font-semibold">
+        {{ course.title }}
+      </h1>
+      <UBadge v-if="course.isEnrolled" color="success" variant="subtle">
+        {{ t('courses.enrolled') }}
+      </UBadge>
+    </div>
+    <p class="text-muted mb-4">
       {{ course.description }}
     </p>
+
+    <UAlert
+      v-if="!course.canDownload" color="neutral" variant="subtle" icon="i-lucide-lock"
+      :description="t('courses.notEnrolledNotice')" class="mb-6"
+    />
 
     <div v-for="module in course.modules" :key="module.id" class="mb-6 rounded-lg border border-default p-4">
       <span class="font-medium block mb-3">{{ module.order }}. {{ module.title }}</span>
@@ -66,7 +76,10 @@ async function downloadDocument(doc: DocumentSummary) {
             </UBadge>
             <span class="text-muted ms-2">{{ formatBytes(doc.sizeBytes) }}</span>
           </span>
-          <UButton size="xs" variant="soft" :label="t('courses.documents.download')" @click="downloadDocument(doc)" />
+          <UButton
+            size="xs" variant="soft" :disabled="!course.canDownload"
+            :label="t('courses.documents.download')" @click="downloadDocument(doc)"
+          />
         </li>
       </ul>
       <p v-else class="text-sm text-muted">

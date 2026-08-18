@@ -28,6 +28,10 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
             return Result.Failure<CourseDetails>(ContentErrors.CourseNotAccessible);
         }
 
+        var isEnrolled = await dbContext.Enrollments
+            .AnyAsync(e => e.CourseId == course.Id && e.UserId == currentUser.UserId, cancellationToken);
+        var canDownload = CourseAccess.CanManage(course, currentUser) || isEnrolled;
+
         var modules = await dbContext.Modules.AsNoTracking()
             .Where(m => m.CourseId == course.Id)
             .OrderBy(m => m.Order)
@@ -51,6 +55,8 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
                     .ToList()))
             .ToList();
 
-        return new CourseDetails(course.Id, course.Title, course.Description, course.TrainerId, course.IsPublished, course.CreatedAtUtc, moduleDetails);
+        return new CourseDetails(
+            course.Id, course.Title, course.Description, course.TrainerId, course.IsPublished, course.CreatedAtUtc,
+            isEnrolled, canDownload, moduleDetails);
     }
 }

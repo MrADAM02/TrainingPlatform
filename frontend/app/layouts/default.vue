@@ -23,6 +23,7 @@ async function handleLogout() {
       <nav v-if="authStore.isAuthenticated" class="flex items-center gap-1">
         <UButton to="/dashboard" variant="ghost" :label="t('nav.dashboard')" />
         <UButton to="/courses" variant="ghost" :label="t('nav.courses')" />
+        <UButton to="/search" variant="ghost" :label="t('nav.search')" />
         <UButton
           v-if="authStore.hasRole('Trainer') || authStore.hasRole('Administrator')"
           to="/trainer" variant="ghost" :label="t('nav.trainer')"

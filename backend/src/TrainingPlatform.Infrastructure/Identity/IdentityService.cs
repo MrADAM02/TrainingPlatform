@@ -186,6 +186,61 @@ public sealed class IdentityService(
         return new UserSummary(user.Id, user.Email!, user.FullName, [.. roles], user.IsActive, user.CreatedAtUtc, user.LastLoginAtUtc);
     }
 
+    public async Task<Result<IReadOnlyList<UserSummary>>> GetUsersByIdsAsync(
+        IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken)
+    {
+        var users = await dbContext.Users.AsNoTracking()
+            .Where(u => userIds.Contains(u.Id))
+            .ToListAsync(cancellationToken);
+
+        var ids = users.Select(u => u.Id).ToList();
+
+        var rolesByUser = await (
+            from userRole in dbContext.UserRoles.AsNoTracking()
+            join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
+            where ids.Contains(userRole.UserId)
+            select new { userRole.UserId, RoleName = role.Name! }
+        ).ToListAsync(cancellationToken);
+
+        IReadOnlyList<UserSummary> items = users
+            .Select(u => new UserSummary(
+                u.Id,
+                u.Email!,
+                u.FullName,
+                rolesByUser.Where(r => r.UserId == u.Id).Select(r => r.RoleName).ToList(),
+                u.IsActive,
+                u.CreatedAtUtc,
+                u.LastLoginAtUtc))
+            .ToList();
+
+        return Result.Success(items);
+    }
+
+    public async Task<Result<IReadOnlyList<UserSummary>>> SearchTraineesAsync(
+        string? keyword, int limit, CancellationToken cancellationToken)
+    {
+        var query =
+            from user in dbContext.Users.AsNoTracking()
+            join userRole in dbContext.UserRoles.AsNoTracking() on user.Id equals userRole.UserId
+            join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
+            where role.Name == Roles.Trainee
+            select user;
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var pattern = keyword.ToLower();
+            query = query.Where(u => u.Email!.ToLower().Contains(pattern) || u.FullName.ToLower().Contains(pattern));
+        }
+
+        var users = await query.OrderBy(u => u.Email).Take(limit).ToListAsync(cancellationToken);
+
+        IReadOnlyList<UserSummary> items = users
+            .Select(u => new UserSummary(u.Id, u.Email!, u.FullName, [Roles.Trainee], u.IsActive, u.CreatedAtUtc, u.LastLoginAtUtc))
+            .ToList();
+
+        return Result.Success(items);
+    }
+
     public async Task<Result> UpdateUserAsync(Guid userId, string fullName, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());

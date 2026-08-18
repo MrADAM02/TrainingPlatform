@@ -9,6 +9,7 @@
     "adminActivity": "Activity Log",
     "trainer": "My Courses",
     "courses": "Courses",
+    "search": "Search",
     "logout": "Log out"
   },
   "auth": {
@@ -23,7 +24,24 @@
   },
   "dashboard": {
     "welcome": "Welcome, {name}",
-    "role": "Role: {role}"
+    "role": "Role: {role}",
+    "myCourses": "My Courses",
+    "recentlyAdded": "Recently Added",
+    "progress": "{completed} of {total} completed",
+    "statusActive": "In progress",
+    "statusCompleted": "Completed",
+    "noCourses": "You're not enrolled in any courses yet.",
+    "noRecent": "Nothing new recently."
+  },
+  "search": {
+    "title": "Search",
+    "keyword": "Keyword",
+    "course": "Course",
+    "contentType": "Content type",
+    "allCourses": "All courses",
+    "allTypes": "All types",
+    "noResults": "No results.",
+    "inCourse": "in {course}"
   },
   "admin": {
     "hub": {
@@ -68,6 +86,7 @@
     },
     "activity": {
       "title": "Activity Log",
+      "export": "Export CSV",
       "timestamp": "Timestamp",
       "actor": "Actor",
       "action": "Action",
@@ -89,6 +108,8 @@
     "unpublish": "Unpublish",
     "manage": "Manage",
     "view": "View",
+    "enrolled": "Enrolled",
+    "notEnrolledNotice": "You need to be enrolled to download this course's materials. Contact your administrator or trainer.",
     "delete": "Delete",
     "save": "Save",
     "cancel": "Cancel",
@@ -128,6 +149,22 @@
       "uploadSuccess": "Document uploaded.",
       "uploadError": "Upload failed.",
       "deleteSuccess": "Document deleted."
+    },
+    "enrollments": {
+      "title": "Enrolled Trainees",
+      "enroll": "Enroll trainees",
+      "searchPlaceholder": "Search trainees by name or email",
+      "noResults": "No matching trainees.",
+      "unenroll": "Remove",
+      "empty": "No trainees enrolled yet.",
+      "statusActive": "In progress",
+      "statusCompleted": "Completed",
+      "enrolledAt": "Enrolled",
+      "enrollSuccess": "Trainees enrolled.",
+      "unenrollSuccess": "Trainee removed.",
+      "confirmUnenrollTitle": "Remove trainee?",
+      "confirmUnenrollBody": "They will lose access to this course's materials.",
+      "close": "Close"
     }
   },
   "pagination": {

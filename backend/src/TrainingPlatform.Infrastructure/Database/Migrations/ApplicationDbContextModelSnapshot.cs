@@ -356,6 +356,74 @@ namespace TrainingPlatform.Infrastructure.Database.Migrations
                     b.ToTable("modules", (string)null);
                 });
 
+            modelBuilder.Entity("TrainingPlatform.Domain.Enrollments.Enrollment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("course_id");
+
+                    b.Property<DateTime>("EnrolledAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("enrolled_at_utc");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_enrollments");
+
+                    b.HasIndex("CourseId")
+                        .HasDatabaseName("ix_enrollments_course_id");
+
+                    b.HasIndex("UserId", "CourseId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_enrollments_user_id_course_id");
+
+                    b.ToTable("enrollments", (string)null);
+                });
+
+            modelBuilder.Entity("TrainingPlatform.Domain.Enrollments.Progress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at_utc");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("document_id");
+
+                    b.Property<Guid>("EnrollmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("enrollment_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_document_progress");
+
+                    b.HasIndex("DocumentId")
+                        .HasDatabaseName("ix_document_progress_document_id");
+
+                    b.HasIndex("EnrollmentId", "DocumentId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_document_progress_enrollment_id_document_id");
+
+                    b.ToTable("document_progress", (string)null);
+                });
+
             modelBuilder.Entity("TrainingPlatform.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -585,6 +653,40 @@ namespace TrainingPlatform.Infrastructure.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_modules_courses_course_id");
+                });
+
+            modelBuilder.Entity("TrainingPlatform.Domain.Enrollments.Enrollment", b =>
+                {
+                    b.HasOne("TrainingPlatform.Domain.Content.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_enrollments_courses_course_id");
+
+                    b.HasOne("TrainingPlatform.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_enrollments_users_user_id");
+                });
+
+            modelBuilder.Entity("TrainingPlatform.Domain.Enrollments.Progress", b =>
+                {
+                    b.HasOne("TrainingPlatform.Domain.Content.Document", null)
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_document_progress_documents_document_id");
+
+                    b.HasOne("TrainingPlatform.Domain.Enrollments.Enrollment", null)
+                        .WithMany()
+                        .HasForeignKey("EnrollmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_document_progress_enrollments_enrollment_id");
                 });
 
             modelBuilder.Entity("TrainingPlatform.Infrastructure.Identity.RefreshTokenEntity", b =>

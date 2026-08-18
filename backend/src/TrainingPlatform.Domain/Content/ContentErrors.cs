@@ -17,5 +17,5 @@ public static class ContentErrors
         "Content.NotCourseOwner", "You can only manage courses you own.");
 
     public static readonly Error CourseNotAccessible = Error.Forbidden(
-        "Content.CourseNotAccessible", "This course is not published.");
+        "Content.CourseNotAccessible", "You are not enrolled in this course.");
 }

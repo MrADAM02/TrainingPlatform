@@ -21,4 +21,7 @@ public static class ActivityActions
     public const string DocumentUploadRequested = "DocumentUploadRequested";
     public const string DocumentDeleted = "DocumentDeleted";
     public const string DocumentDownloaded = "DocumentDownloaded";
+
+    public const string UsersEnrolled = "UsersEnrolled";
+    public const string UserUnenrolled = "UserUnenrolled";
 }

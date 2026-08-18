@@ -4,6 +4,7 @@ using TrainingPlatform.Application.Users.DeleteUser;
 using TrainingPlatform.Application.Users.GetUserById;
 using TrainingPlatform.Application.Users.GetUsers;
 using TrainingPlatform.Application.Users.ResetUserPassword;
+using TrainingPlatform.Application.Users.SearchTrainees;
 using TrainingPlatform.Application.Users.SetUserActiveStatus;
 using TrainingPlatform.Application.Users.UpdateUser;
 
@@ -67,6 +68,16 @@ public static class UserEndpoints
             var result = await sender.Send(new DeleteUserCommand(id), ct);
             return result.IsSuccess ? Results.NoContent() : CustomResults.Problem(result);
         });
+
+        // Deliberately outside the Administrator-only group above: Trainers need this to find
+        // trainees to enroll in their own courses, but must not see the full user directory.
+        app.MapGet("/api/v1/users/trainees", async (ISender sender, CancellationToken ct, string? keyword = null, int limit = 20) =>
+        {
+            var result = await sender.Send(new SearchTraineesQuery(keyword, limit), ct);
+            return result.IsSuccess ? Results.Ok(result.Value) : CustomResults.Problem(result);
+        })
+        .WithTags("Users")
+        .RequireAuthorization("RequireTrainerOrAdministrator");
 
         return app;
     }

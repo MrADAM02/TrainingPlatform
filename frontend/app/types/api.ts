@@ -44,6 +44,7 @@ export interface CourseSummary {
   trainerId: string
   isPublished: boolean
   createdAtUtc: string
+  isEnrolled: boolean
 }
 
 // Matches TrainingPlatform.Domain.Content.DocumentType's declaration order (serialized as int).
@@ -75,6 +76,8 @@ export interface CourseDetails {
   trainerId: string
   isPublished: boolean
   createdAtUtc: string
+  isEnrolled: boolean
+  canDownload: boolean
   modules: ModuleDetails[]
 }
 
@@ -82,4 +85,54 @@ export interface UploadTicket {
   documentId: string
   uploadUrl: string
   expiresAtUtc: string
+}
+
+// Sent as the query-string value for the search content-type filter — ASP.NET Core's minimal
+// API model binder resolves nullable enum query params by name, not by number.
+export const documentTypeNames = ['Pdf', 'Video', 'Presentation', 'Other'] as const
+export type DocumentTypeName = typeof documentTypeNames[number]
+
+export type EnrollmentStatus = 0 | 1 // Active | Completed — matches the C# enum's declaration order
+
+export interface EnrollmentSummary {
+  id: string
+  userId: string
+  userEmail: string
+  userFullName: string
+  courseId: string
+  status: EnrollmentStatus
+  enrolledAtUtc: string
+}
+
+export interface DashboardCourseItem {
+  courseId: string
+  courseTitle: string
+  status: EnrollmentStatus
+  totalDocuments: number
+  completedDocuments: number
+}
+
+export interface RecentDocumentItem {
+  documentId: string
+  documentTitle: string
+  courseId: string
+  courseTitle: string
+  uploadedAtUtc: string
+}
+
+export interface DashboardResponse {
+  courses: DashboardCourseItem[]
+  recentlyAdded: RecentDocumentItem[]
+}
+
+export interface DocumentSearchResult {
+  documentId: string
+  documentTitle: string
+  fileType: number
+  courseId: string
+  courseTitle: string
+  moduleId: string
+  moduleTitle: string
+  uploadedAtUtc: string
+  canDownload: boolean
 }

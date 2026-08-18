@@ -14,7 +14,7 @@ const data = ref<PaginatedList<CourseSummary> | null>(null)
 
 async function fetchCourses() {
   try {
-    data.value = await request<PaginatedList<CourseSummary>>(`/courses?page=${page.value}&pageSize=${pageSize}`)
+    data.value = await request<PaginatedList<CourseSummary>>(`/courses?page=${page.value}&pageSize=${pageSize}&mine=true`)
   }
   catch {
     toast.add({ title: t('common.error'), color: 'error' })

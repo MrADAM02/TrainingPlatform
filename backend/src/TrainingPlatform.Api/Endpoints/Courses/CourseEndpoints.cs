@@ -14,9 +14,9 @@ public static class CourseEndpoints
     {
         var group = app.MapGroup("/api/v1/courses").WithTags("Courses").RequireAuthorization();
 
-        group.MapGet("/", async (ISender sender, CancellationToken ct, int page = 1, int pageSize = 20) =>
+        group.MapGet("/", async (ISender sender, CancellationToken ct, int page = 1, int pageSize = 20, bool mine = false) =>
         {
-            var result = await sender.Send(new GetCoursesQuery(page, pageSize), ct);
+            var result = await sender.Send(new GetCoursesQuery(page, pageSize, mine), ct);
             return result.IsSuccess ? Results.Ok(result.Value) : CustomResults.Problem(result);
         });
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormError, FormSubmitEvent } from '@nuxt/ui'
-import type { CourseDetails, DocumentSummary, ModuleDetails, ProblemDetails, UploadTicket } from '~/types/api'
+import type { CourseDetails, DocumentSummary, EnrollmentSummary, ModuleDetails, ProblemDetails, UploadTicket, UserSummary } from '~/types/api'
 import { documentTypeLabels } from '~/types/api'
 
 const { t } = useI18n()
@@ -218,6 +218,104 @@ async function confirmDeleteDocument() {
     deletingDocument.value = null
   }
 }
+
+// --- Enrollments ---
+const enrollments = ref<EnrollmentSummary[]>([])
+
+async function fetchEnrollments() {
+  try {
+    enrollments.value = await request<EnrollmentSummary[]>(`/courses/${courseId}/enrollments`)
+  }
+  catch {
+    toast.add({ title: t('common.error'), color: 'error' })
+  }
+}
+
+await fetchEnrollments()
+
+const isEnrollOpen = ref(false)
+const traineeKeyword = ref('')
+const traineeResults = ref<UserSummary[]>([])
+const selectedTraineeIds = ref<Set<string>>(new Set())
+let traineeSearchTimer: ReturnType<typeof setTimeout> | undefined
+
+function openEnroll() {
+  traineeKeyword.value = ''
+  traineeResults.value = []
+  selectedTraineeIds.value = new Set()
+  isEnrollOpen.value = true
+}
+
+async function searchTrainees() {
+  try {
+    traineeResults.value = await request<UserSummary[]>(
+      `/users/trainees?keyword=${encodeURIComponent(traineeKeyword.value)}`,
+    )
+  }
+  catch {
+    traineeResults.value = []
+  }
+}
+
+watch(traineeKeyword, () => {
+  clearTimeout(traineeSearchTimer)
+  traineeSearchTimer = setTimeout(searchTrainees, 300)
+})
+
+// Populate the list immediately when the modal opens, before the user types anything.
+watch(isEnrollOpen, (open) => {
+  if (open) searchTrainees()
+})
+
+function toggleTraineeSelection(userId: string) {
+  if (selectedTraineeIds.value.has(userId)) {
+    selectedTraineeIds.value.delete(userId)
+  }
+  else {
+    selectedTraineeIds.value.add(userId)
+  }
+}
+
+async function submitEnroll() {
+  if (selectedTraineeIds.value.size === 0) return
+
+  try {
+    await request(`/courses/${courseId}/enrollments`, {
+      method: 'POST',
+      body: { userIds: [...selectedTraineeIds.value] },
+    })
+    toast.add({ title: t('courses.enrollments.enrollSuccess'), color: 'success' })
+    isEnrollOpen.value = false
+    await fetchEnrollments()
+  }
+  catch (error) {
+    toast.add({ title: errorDetail(error, t('common.error')), color: 'error' })
+  }
+}
+
+const removingEnrollment = ref<EnrollmentSummary | null>(null)
+const isRemoveEnrollmentOpen = computed({
+  get: () => removingEnrollment.value !== null,
+  set: (value: boolean) => { if (!value) removingEnrollment.value = null },
+})
+
+async function confirmRemoveEnrollment() {
+  if (!removingEnrollment.value) return
+  try {
+    await request(`/enrollments/${removingEnrollment.value.id}`, { method: 'DELETE' })
+    toast.add({ title: t('courses.enrollments.unenrollSuccess'), color: 'success' })
+    removingEnrollment.value = null
+    await fetchEnrollments()
+  }
+  catch (error) {
+    toast.add({ title: errorDetail(error, t('common.error')), color: 'error' })
+    removingEnrollment.value = null
+  }
+}
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString()
+}
 </script>
 
 <template>
@@ -309,13 +407,68 @@ async function confirmDeleteDocument() {
         :disabled="uploadingModuleId === module.id"
         @update:model-value="(file) => handleFileSelected(module.id, file)"
       >
-        <UButton
-          size="xs" variant="outline" icon="i-lucide-upload"
-          :loading="uploadingModuleId === module.id"
-          :label="uploadingModuleId === module.id ? t('courses.documents.uploading') : t('courses.documents.upload')"
-        />
+        <template #default="{ open }">
+          <UButton
+            size="xs" variant="outline" icon="i-lucide-upload"
+            :loading="uploadingModuleId === module.id"
+            :label="uploadingModuleId === module.id ? t('courses.documents.uploading') : t('courses.documents.upload')"
+            @click="() => open()"
+          />
+        </template>
       </UFileUpload>
     </div>
+
+    <div class="flex items-center justify-between mb-4 mt-8">
+      <h2 class="text-lg font-semibold">
+        {{ t('courses.enrollments.title') }}
+      </h2>
+      <UButton size="sm" :label="t('courses.enrollments.enroll')" icon="i-lucide-user-plus" @click="openEnroll" />
+    </div>
+
+    <p v-if="enrollments.length === 0" class="text-muted">
+      {{ t('courses.enrollments.empty') }}
+    </p>
+
+    <table v-else class="w-full text-sm">
+      <thead>
+        <tr class="text-muted">
+          <th class="text-start p-2 font-medium">
+            {{ t('admin.users.email') }}
+          </th>
+          <th class="text-start p-2 font-medium">
+            {{ t('admin.users.fullName') }}
+          </th>
+          <th class="text-start p-2 font-medium">
+            {{ t('courses.status') }}
+          </th>
+          <th class="text-start p-2 font-medium">
+            {{ t('courses.enrollments.enrolledAt') }}
+          </th>
+          <th class="text-start p-2 font-medium" />
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="enrollment in enrollments" :key="enrollment.id" class="border-t border-default">
+          <td class="p-2">
+            {{ enrollment.userEmail }}
+          </td>
+          <td class="p-2">
+            {{ enrollment.userFullName }}
+          </td>
+          <td class="p-2">
+            <UBadge :color="enrollment.status === 1 ? 'success' : 'primary'" variant="subtle">
+              {{ enrollment.status === 1 ? t('courses.enrollments.statusCompleted') : t('courses.enrollments.statusActive') }}
+            </UBadge>
+          </td>
+          <td class="p-2">
+            {{ formatDate(enrollment.enrolledAtUtc) }}
+          </td>
+          <td class="p-2 text-end">
+            <UButton size="xs" variant="soft" color="error" :label="t('courses.enrollments.unenroll')" @click="removingEnrollment = enrollment" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
     <!-- Edit course -->
     <UModal v-model:open="isEditOpen" :title="t('courses.edit')">
@@ -386,6 +539,48 @@ async function confirmDeleteDocument() {
         <div class="flex justify-end gap-2 mt-6">
           <UButton variant="ghost" :label="t('common.cancel')" @click="deletingDocument = null" />
           <UButton color="error" :label="t('common.confirm')" @click="confirmDeleteDocument" />
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Enroll trainees -->
+    <UModal v-model:open="isEnrollOpen" :title="t('courses.enrollments.enroll')">
+      <template #body>
+        <UInput
+          v-model="traineeKeyword" :placeholder="t('courses.enrollments.searchPlaceholder')"
+          icon="i-lucide-search" class="w-full mb-4"
+        />
+
+        <p v-if="traineeResults.length === 0" class="text-muted text-sm">
+          {{ t('courses.enrollments.noResults') }}
+        </p>
+
+        <ul v-else class="space-y-1 max-h-64 overflow-y-auto">
+          <li v-for="trainee in traineeResults" :key="trainee.id">
+            <label class="flex items-center gap-2 py-1 cursor-pointer">
+              <UCheckbox
+                :model-value="selectedTraineeIds.has(trainee.id)"
+                @update:model-value="toggleTraineeSelection(trainee.id)"
+              />
+              <span class="text-sm">{{ trainee.fullName }} · {{ trainee.email }}</span>
+            </label>
+          </li>
+        </ul>
+
+        <div class="flex justify-end gap-2 mt-6">
+          <UButton variant="ghost" :label="t('courses.cancel')" @click="isEnrollOpen = false" />
+          <UButton :disabled="selectedTraineeIds.size === 0" :label="t('courses.save')" @click="submitEnroll" />
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Remove enrollment -->
+    <UModal v-model:open="isRemoveEnrollmentOpen" :title="t('courses.enrollments.confirmUnenrollTitle')">
+      <template #body>
+        <p>{{ t('courses.enrollments.confirmUnenrollBody') }}</p>
+        <div class="flex justify-end gap-2 mt-6">
+          <UButton variant="ghost" :label="t('common.cancel')" @click="removingEnrollment = null" />
+          <UButton color="error" :label="t('common.confirm')" @click="confirmRemoveEnrollment" />
         </div>
       </template>
     </UModal>

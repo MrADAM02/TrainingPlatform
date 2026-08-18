@@ -9,6 +9,7 @@
     "adminActivity": "سجل النشاط",
     "trainer": "دوراتي",
     "courses": "الدورات",
+    "search": "بحث",
     "logout": "تسجيل الخروج"
   },
   "auth": {
@@ -23,7 +24,24 @@
   },
   "dashboard": {
     "welcome": "مرحباً، {name}",
-    "role": "الدور: {role}"
+    "role": "الدور: {role}",
+    "myCourses": "دوراتي",
+    "recentlyAdded": "أُضيف مؤخراً",
+    "progress": "اكتمل {completed} من {total}",
+    "statusActive": "قيد التقدم",
+    "statusCompleted": "مكتملة",
+    "noCourses": "لست مسجلاً في أي دورة بعد.",
+    "noRecent": "لا يوجد جديد مؤخراً."
+  },
+  "search": {
+    "title": "بحث",
+    "keyword": "كلمة مفتاحية",
+    "course": "الدورة",
+    "contentType": "نوع المحتوى",
+    "allCourses": "جميع الدورات",
+    "allTypes": "جميع الأنواع",
+    "noResults": "لا توجد نتائج.",
+    "inCourse": "في {course}"
   },
   "admin": {
     "hub": {
@@ -68,6 +86,7 @@
     },
     "activity": {
       "title": "سجل النشاط",
+      "export": "تصدير CSV",
       "timestamp": "الوقت",
       "actor": "المستخدم",
       "action": "الإجراء",
@@ -89,6 +108,8 @@
     "unpublish": "إلغاء النشر",
     "manage": "إدارة",
     "view": "عرض",
+    "enrolled": "مسجّل",
+    "notEnrolledNotice": "يجب أن تكون مسجلاً للتمكن من تنزيل مواد هذه الدورة. تواصل مع المسؤول أو المدرب.",
     "delete": "حذف",
     "save": "حفظ",
     "cancel": "إلغاء",
@@ -128,6 +149,22 @@
       "uploadSuccess": "تم رفع المستند.",
       "uploadError": "فشل الرفع.",
       "deleteSuccess": "تم حذف المستند."
+    },
+    "enrollments": {
+      "title": "المتدربون المسجلون",
+      "enroll": "تسجيل متدربين",
+      "searchPlaceholder": "ابحث عن متدرب بالاسم أو البريد الإلكتروني",
+      "noResults": "لا يوجد متدربون مطابقون.",
+      "unenroll": "إزالة",
+      "empty": "لا يوجد متدربون مسجلون بعد.",
+      "statusActive": "قيد التقدم",
+      "statusCompleted": "مكتمل",
+      "enrolledAt": "تاريخ التسجيل",
+      "enrollSuccess": "تم تسجيل المتدربين.",
+      "unenrollSuccess": "تمت إزالة المتدرب.",
+      "confirmUnenrollTitle": "إزالة المتدرب؟",
+      "confirmUnenrollBody": "سيفقد الوصول إلى مواد هذه الدورة.",
+      "close": "إغلاق"
     }
   },
   "pagination": {

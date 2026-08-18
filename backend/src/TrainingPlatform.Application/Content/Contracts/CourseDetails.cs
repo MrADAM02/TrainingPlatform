@@ -7,4 +7,6 @@ public sealed record CourseDetails(
     Guid TrainerId,
     bool IsPublished,
     DateTime CreatedAtUtc,
+    bool IsEnrolled,
+    bool CanDownload,
     IReadOnlyList<ModuleDetails> Modules);

@@ -6,4 +6,5 @@ public sealed record CourseSummary(
     string Description,
     Guid TrainerId,
     bool IsPublished,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc,
+    bool IsEnrolled);

@@ -33,6 +33,17 @@ public interface IIdentityService
 
     Task<Result<UserSummary>> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken);
 
+    /// <summary>Batch lookup used where Application-layer code (e.g. enrollment listings) needs
+    /// to resolve a set of user ids to display details — Application cannot query the Identity
+    /// store (Infrastructure) directly.</summary>
+    Task<Result<IReadOnlyList<UserSummary>>> GetUsersByIdsAsync(
+        IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken);
+
+    /// <summary>Used by the enrollment UI: Trainer/Admin need to find Trainees to enroll, but
+    /// the full user directory (<see cref="GetUsersAsync"/>) is Administrator-only.</summary>
+    Task<Result<IReadOnlyList<UserSummary>>> SearchTraineesAsync(
+        string? keyword, int limit, CancellationToken cancellationToken);
+
     Task<Result> UpdateUserAsync(Guid userId, string fullName, CancellationToken cancellationToken);
 
     /// <summary>

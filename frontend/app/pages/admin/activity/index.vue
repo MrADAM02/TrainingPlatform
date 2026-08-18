@@ -9,6 +9,7 @@ const page = ref(1)
 const pageSize = 25
 const data = ref<PaginatedList<ActivityLogItem> | null>(null)
 const pending = ref(false)
+const isExporting = ref(false)
 
 async function fetchLog() {
   pending.value = true
@@ -29,13 +30,38 @@ await fetchLog()
 function formatDate(value: string): string {
   return new Date(value).toLocaleString()
 }
+
+async function exportCsv() {
+  isExporting.value = true
+  try {
+    const blob = await request<Blob>('/activity-log/export', { responseType: 'blob' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `activity-log-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+  catch {
+    toast.add({ title: t('common.error'), color: 'error' })
+  }
+  finally {
+    isExporting.value = false
+  }
+}
 </script>
 
 <template>
   <div>
-    <h1 class="text-xl font-semibold mb-6">
-      {{ t('admin.activity.title') }}
-    </h1>
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-xl font-semibold">
+        {{ t('admin.activity.title') }}
+      </h1>
+      <UButton
+        variant="soft" icon="i-lucide-download" :loading="isExporting"
+        :label="t('admin.activity.export')" @click="exportCsv"
+      />
+    </div>
 
     <div class="overflow-x-auto rounded-lg border border-default">
       <table class="w-full text-sm">

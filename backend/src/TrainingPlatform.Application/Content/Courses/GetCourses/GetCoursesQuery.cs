@@ -8,33 +8,47 @@ using TrainingPlatform.Domain.Users;
 
 namespace TrainingPlatform.Application.Content.Courses.GetCourses;
 
-public sealed record GetCoursesQuery(int Page = 1, int PageSize = 20) : IQuery<PaginatedList<CourseSummary>>;
+/// <summary><paramref name="ManagedOnly"/> distinguishes the management view (Trainer's "My
+/// Courses", owned courses only) from the open-catalog browse view (owned/managed + every
+/// published course) — without it, a Trainer's management list would include other trainers'
+/// published courses with Edit/Delete actions that shouldn't apply to them.</summary>
+public sealed record GetCoursesQuery(int Page = 1, int PageSize = 20, bool ManagedOnly = false)
+    : IQuery<PaginatedList<CourseSummary>>;
 
-/// <summary>Interim visibility (see <see cref="CourseAccess"/>): Admin sees every course,
-/// Trainer sees their own regardless of publish state, everyone else sees published only.</summary>
 public sealed class GetCoursesQueryHandler(IApplicationDbContext dbContext, IUserContext currentUser)
     : IQueryHandler<GetCoursesQuery, PaginatedList<CourseSummary>>
 {
     public async Task<Result<PaginatedList<CourseSummary>>> Handle(GetCoursesQuery query, CancellationToken cancellationToken)
     {
         var courses = dbContext.Courses.AsNoTracking().AsQueryable();
+        var isAdmin = currentUser.Roles.Contains(Roles.Administrator);
 
-        if (!currentUser.Roles.Contains(Roles.Administrator))
+        if (!isAdmin)
         {
-            courses = currentUser.Roles.Contains(Roles.Trainer)
-                ? courses.Where(c => c.IsPublished || c.TrainerId == currentUser.UserId)
-                : courses.Where(c => c.IsPublished);
+            courses = query.ManagedOnly
+                ? courses.Where(c => c.TrainerId == currentUser.UserId)
+                : courses.Where(c => c.TrainerId == currentUser.UserId || c.IsPublished);
         }
 
         courses = courses.OrderByDescending(c => c.CreatedAtUtc);
 
         var totalCount = await courses.CountAsync(cancellationToken);
 
-        var items = await courses
+        var pagedCourses = await courses
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(c => new CourseSummary(c.Id, c.Title, c.Description, c.TrainerId, c.IsPublished, c.CreatedAtUtc))
             .ToListAsync(cancellationToken);
+
+        var courseIds = pagedCourses.Select(c => c.Id).ToList();
+        var enrolledCourseIds = await dbContext.Enrollments
+            .Where(e => e.UserId == currentUser.UserId && courseIds.Contains(e.CourseId))
+            .Select(e => e.CourseId)
+            .ToListAsync(cancellationToken);
+
+        var items = pagedCourses
+            .Select(c => new CourseSummary(
+                c.Id, c.Title, c.Description, c.TrainerId, c.IsPublished, c.CreatedAtUtc, enrolledCourseIds.Contains(c.Id)))
+            .ToList();
 
         return new PaginatedList<CourseSummary>
         {

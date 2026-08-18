@@ -15,4 +15,13 @@ public interface IActivityLogService
         int page,
         int pageSize,
         CancellationToken cancellationToken);
+
+    /// <summary>REQ-ADM-07: unpaginated export for reporting, optionally date-bounded and
+    /// capped at a fixed row limit so a very wide date range can't return an unbounded
+    /// response.</summary>
+    Task<Result<IReadOnlyList<ActivityLogItem>>> ExportAsync(
+        DateTime? from,
+        DateTime? to,
+        CancellationToken cancellationToken);
 }
+

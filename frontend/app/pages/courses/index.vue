@@ -36,7 +36,12 @@ await fetchCourses()
       <NuxtLink v-for="course in data?.items ?? []" :key="course.id" :to="`/courses/${course.id}`">
         <UCard class="h-full hover:ring-primary transition-shadow">
           <template #header>
-            <span class="font-medium">{{ course.title }}</span>
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-medium">{{ course.title }}</span>
+              <UBadge v-if="course.isEnrolled" color="success" variant="subtle">
+                {{ t('courses.enrolled') }}
+              </UBadge>
+            </div>
           </template>
           <p class="text-sm text-muted line-clamp-3">
             {{ course.description }}

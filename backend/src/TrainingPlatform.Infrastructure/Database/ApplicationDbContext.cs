@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TrainingPlatform.Application.Abstractions.Data;
 using TrainingPlatform.Domain.Activity;
 using TrainingPlatform.Domain.Content;
+using TrainingPlatform.Domain.Enrollments;
 using TrainingPlatform.Infrastructure.Identity;
 
 namespace TrainingPlatform.Infrastructure.Database;
@@ -20,6 +21,10 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Module> Modules => Set<Module>();
 
     public DbSet<Document> Documents => Set<Document>();
+
+    public DbSet<Enrollment> Enrollments => Set<Enrollment>();
+
+    public DbSet<Progress> Progresses => Set<Progress>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -102,6 +107,36 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             entity.HasOne<Module>()
                 .WithMany()
                 .HasForeignKey(d => d.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Enrollment>(entity =>
+        {
+            entity.ToTable("enrollments");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.UserId, e.CourseId }).IsUnique();
+            entity.HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Course>()
+                .WithMany()
+                .HasForeignKey(e => e.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Progress>(entity =>
+        {
+            entity.ToTable("document_progress");
+            entity.HasKey(p => p.Id);
+            entity.HasIndex(p => new { p.EnrollmentId, p.DocumentId }).IsUnique();
+            entity.HasOne<Enrollment>()
+                .WithMany()
+                .HasForeignKey(p => p.EnrollmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Document>()
+                .WithMany()
+                .HasForeignKey(p => p.DocumentId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }
