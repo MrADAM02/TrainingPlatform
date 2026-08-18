@@ -82,7 +82,16 @@
       "deleteSuccess": "تم حذف المستخدم.",
       "activateSuccess": "تم تفعيل المستخدم.",
       "deactivateSuccess": "تم إيقاف المستخدم.",
-      "close": "إغلاق"
+      "close": "إغلاق",
+      "bulkImport": "استيراد جماعي",
+      "bulkImportInstructions": "ارفع ملف CSV يحتوي على الأعمدة \"email\" و\"fullName\" و\"role\". يجب أن يكون الدور Administrator أو Trainer أو Trainee. سيحصل كل حساب جديد على كلمة مرور مؤقتة يتم إنشاؤها تلقائياً.",
+      "chooseFile": "اختر ملف CSV",
+      "import": "استيراد",
+      "bulkImportSummary": "تم إنشاء {created} حساباً، وفشل {failed} صفاً.",
+      "bulkImportCreated": "الحسابات التي تم إنشاؤها — شارك كلمات المرور المؤقتة هذه عبر قناة آمنة",
+      "bulkImportFailed": "الصفوف الفاشلة",
+      "row": "الصف",
+      "reason": "السبب"
     },
     "activity": {
       "title": "سجل النشاط",

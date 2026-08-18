@@ -51,6 +51,38 @@ public sealed class IdentityService(
         return user.Id;
     }
 
+    public async Task<Result<(Guid UserId, string TemporaryPassword)>> CreateUserWithTemporaryPasswordAsync(
+        string email,
+        string fullName,
+        string role,
+        CancellationToken cancellationToken)
+    {
+        var existing = await userManager.FindByEmailAsync(email);
+        if (existing is not null)
+        {
+            return Result.Failure<(Guid, string)>(UserErrors.EmailAlreadyInUse);
+        }
+
+        var temporaryPassword = GenerateTemporaryPassword();
+
+        var user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            FullName = fullName,
+        };
+
+        var createResult = await userManager.CreateAsync(user, temporaryPassword);
+        if (!createResult.Succeeded)
+        {
+            return Result.Failure<(Guid, string)>(ToError(createResult));
+        }
+
+        await userManager.AddToRoleAsync(user, role);
+
+        return (user.Id, temporaryPassword);
+    }
+
     public async Task<Result<AuthTokensResponse>> LoginAsync(
         string email,
         string password,

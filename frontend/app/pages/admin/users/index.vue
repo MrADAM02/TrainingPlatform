@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormError, FormSubmitEvent } from '@nuxt/ui'
-import type { PaginatedList, ProblemDetails, UserRole, UserSummary } from '~/types/api'
+import type { BulkImportUsersResult, PaginatedList, ProblemDetails, UserRole, UserSummary } from '~/types/api'
 
 const { t } = useI18n()
 const { request } = useApi()
@@ -166,6 +166,43 @@ async function runResetPassword() {
 function formatDate(value: string | null): string {
   return value ? new Date(value).toLocaleString() : t('admin.users.never')
 }
+
+// --- Bulk import ---
+const isBulkImportOpen = ref(false)
+const bulkImportFile = ref<File | null>(null)
+const bulkImporting = ref(false)
+const bulkImportResult = ref<BulkImportUsersResult | null>(null)
+
+function openBulkImport() {
+  bulkImportFile.value = null
+  bulkImportResult.value = null
+  isBulkImportOpen.value = true
+}
+
+function handleBulkImportFileSelected(file: File | File[] | null | undefined) {
+  bulkImportFile.value = Array.isArray(file) ? (file[0] ?? null) : (file ?? null)
+}
+
+async function submitBulkImport() {
+  if (!bulkImportFile.value) return
+
+  bulkImporting.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', bulkImportFile.value)
+    bulkImportResult.value = await request<BulkImportUsersResult>('/users/bulk-import', {
+      method: 'POST',
+      body: formData,
+    })
+    await fetchUsers()
+  }
+  catch (error) {
+    toast.add({ title: errorDetail(error, t('common.error')), color: 'error' })
+  }
+  finally {
+    bulkImporting.value = false
+  }
+}
 </script>
 
 <template>
@@ -174,7 +211,10 @@ function formatDate(value: string | null): string {
       <h1 class="text-xl font-semibold">
         {{ t('admin.users.title') }}
       </h1>
-      <UButton :label="t('admin.users.create')" icon="i-lucide-plus" @click="isCreateOpen = true" />
+      <div class="flex gap-2">
+        <UButton :label="t('admin.users.bulkImport')" icon="i-lucide-upload" variant="soft" @click="openBulkImport" />
+        <UButton :label="t('admin.users.create')" icon="i-lucide-plus" @click="isCreateOpen = true" />
+      </div>
     </div>
 
     <div class="overflow-x-auto rounded-lg border border-default">
@@ -329,6 +369,111 @@ function formatDate(value: string | null): string {
         <div class="flex justify-end mt-6">
           <UButton :label="t('admin.users.close')" @click="isTemporaryPasswordOpen = false" />
         </div>
+      </template>
+    </UModal>
+
+    <!-- Bulk import -->
+    <UModal v-model:open="isBulkImportOpen" :title="t('admin.users.bulkImport')">
+      <template #body>
+        <template v-if="!bulkImportResult">
+          <p class="text-sm text-muted mb-4">
+            {{ t('admin.users.bulkImportInstructions') }}
+          </p>
+          <UFileUpload accept=".csv,text/csv" :model-value="null" @update:model-value="handleBulkImportFileSelected">
+            <template #default="{ open }">
+              <UButton
+                variant="outline" icon="i-lucide-file-up"
+                :label="bulkImportFile ? bulkImportFile.name : t('admin.users.chooseFile')"
+                @click="() => open()"
+              />
+            </template>
+          </UFileUpload>
+          <div class="flex justify-end gap-2 mt-6">
+            <UButton variant="ghost" :label="t('admin.users.cancel')" @click="isBulkImportOpen = false" />
+            <UButton
+              :label="t('admin.users.import')" :loading="bulkImporting" :disabled="!bulkImportFile"
+              @click="submitBulkImport"
+            />
+          </div>
+        </template>
+        <template v-else>
+          <p class="text-sm mb-3">
+            {{ t('admin.users.bulkImportSummary', { created: bulkImportResult.created.length, failed: bulkImportResult.failed.length }) }}
+          </p>
+          <div v-if="bulkImportResult.created.length" class="mb-4">
+            <p class="text-sm font-medium mb-1">
+              {{ t('admin.users.bulkImportCreated') }}
+            </p>
+            <div class="max-h-48 overflow-y-auto rounded border border-default text-sm">
+              <table class="w-full">
+                <thead class="bg-elevated/50">
+                  <tr>
+                    <th class="text-start p-2 font-medium">
+                      {{ t('admin.users.email') }}
+                    </th>
+                    <th class="text-start p-2 font-medium">
+                      {{ t('admin.users.role') }}
+                    </th>
+                    <th class="text-start p-2 font-medium">
+                      {{ t('admin.users.password') }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in bulkImportResult.created" :key="row.email" class="border-t border-default">
+                    <td class="p-2">
+                      {{ row.email }}
+                    </td>
+                    <td class="p-2">
+                      {{ row.role }}
+                    </td>
+                    <td class="p-2 font-mono">
+                      {{ row.temporaryPassword }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div v-if="bulkImportResult.failed.length">
+            <p class="text-sm font-medium mb-1 text-error">
+              {{ t('admin.users.bulkImportFailed') }}
+            </p>
+            <div class="max-h-48 overflow-y-auto rounded border border-default text-sm">
+              <table class="w-full">
+                <thead class="bg-elevated/50">
+                  <tr>
+                    <th class="text-start p-2 font-medium">
+                      {{ t('admin.users.row') }}
+                    </th>
+                    <th class="text-start p-2 font-medium">
+                      {{ t('admin.users.email') }}
+                    </th>
+                    <th class="text-start p-2 font-medium">
+                      {{ t('admin.users.reason') }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in bulkImportResult.failed" :key="row.rowNumber" class="border-t border-default">
+                    <td class="p-2">
+                      {{ row.rowNumber }}
+                    </td>
+                    <td class="p-2">
+                      {{ row.email }}
+                    </td>
+                    <td class="p-2">
+                      {{ row.reason }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="flex justify-end mt-6">
+            <UButton :label="t('admin.users.close')" @click="isBulkImportOpen = false" />
+          </div>
+        </template>
       </template>
     </UModal>
   </div>

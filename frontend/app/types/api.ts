@@ -20,6 +20,24 @@ export interface UserSummary {
   lastLoginAtUtc: string | null
 }
 
+export interface BulkImportUserSuccess {
+  email: string
+  fullName: string
+  role: UserRole
+  temporaryPassword: string
+}
+
+export interface BulkImportUserFailure {
+  rowNumber: number
+  email: string
+  reason: string
+}
+
+export interface BulkImportUsersResult {
+  created: BulkImportUserSuccess[]
+  failed: BulkImportUserFailure[]
+}
+
 export interface ActivityLogItem {
   id: string
   userId: string

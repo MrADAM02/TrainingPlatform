@@ -82,7 +82,16 @@
       "deleteSuccess": "User deleted.",
       "activateSuccess": "User activated.",
       "deactivateSuccess": "User deactivated.",
-      "close": "Close"
+      "close": "Close",
+      "bulkImport": "Bulk import",
+      "bulkImportInstructions": "Upload a CSV file with \"email\", \"fullName\", and \"role\" columns. Role must be Administrator, Trainer, or Trainee. Each new account gets a generated temporary password.",
+      "chooseFile": "Choose CSV file",
+      "import": "Import",
+      "bulkImportSummary": "{created} account(s) created, {failed} row(s) failed.",
+      "bulkImportCreated": "Created accounts — share these temporary passwords through a secure channel",
+      "bulkImportFailed": "Failed rows",
+      "row": "Row",
+      "reason": "Reason"
     },
     "activity": {
       "title": "Activity Log",

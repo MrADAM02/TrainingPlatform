@@ -15,6 +15,17 @@ public interface IIdentityService
         string role,
         CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Used by bulk import (REQ-ADM-02), where the caller supplies a roster of accounts to
+    /// create but no per-user password — a generated temporary password is returned alongside
+    /// the new user id so the admin can relay it out of band.
+    /// </summary>
+    Task<Result<(Guid UserId, string TemporaryPassword)>> CreateUserWithTemporaryPasswordAsync(
+        string email,
+        string fullName,
+        string role,
+        CancellationToken cancellationToken);
+
     Task<Result<AuthTokensResponse>> LoginAsync(
         string email,
         string password,
