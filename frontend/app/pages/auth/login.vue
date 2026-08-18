@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { FormError, FormSubmitEvent } from '@nuxt/ui'
 
+definePageMeta({ layout: 'auth' })
+
 const { t } = useI18n()
 const authStore = useAuthStore()
 const router = useRouter()
@@ -34,32 +36,30 @@ async function handleSubmit(event: FormSubmitEvent<typeof state>) {
 </script>
 
 <template>
-  <div class="flex justify-center pt-16">
-    <UCard class="w-full max-w-sm">
-      <template #header>
-        <h1 class="text-lg font-semibold">
-          {{ t('auth.login.title') }}
-        </h1>
-      </template>
+  <UCard class="w-full max-w-sm">
+    <template #header>
+      <h1 class="text-lg font-semibold">
+        {{ t('auth.login.title') }}
+      </h1>
+    </template>
 
-      <UForm :state="state" :validate="validate" @submit="handleSubmit">
-        <div class="space-y-4">
-          <UFormField :label="t('auth.login.email')" name="email">
-            <UInput v-model="state.email" type="email" autocomplete="username" class="w-full" />
-          </UFormField>
+    <UForm :state="state" :validate="validate" @submit="handleSubmit">
+      <div class="space-y-4">
+        <UFormField :label="t('auth.login.email')" name="email">
+          <UInput v-model="state.email" type="email" autocomplete="username" class="w-full" />
+        </UFormField>
 
-          <UFormField :label="t('auth.login.password')" name="password">
-            <UInput v-model="state.password" type="password" autocomplete="current-password" class="w-full" />
-          </UFormField>
+        <UFormField :label="t('auth.login.password')" name="password">
+          <UInput v-model="state.password" type="password" autocomplete="current-password" class="w-full" />
+        </UFormField>
 
-          <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" />
+        <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" />
 
-          <UButton
-            type="submit" block :loading="isSubmitting"
-            :label="isSubmitting ? t('auth.login.submitting') : t('auth.login.submit')"
-          />
-        </div>
-      </UForm>
-    </UCard>
-  </div>
+        <UButton
+          type="submit" block :loading="isSubmitting"
+          :label="isSubmitting ? t('auth.login.submitting') : t('auth.login.submit')"
+        />
+      </div>
+    </UForm>
+  </UCard>
 </template>

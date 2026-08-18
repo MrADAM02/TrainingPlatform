@@ -242,7 +242,7 @@ async function submitBulkImport() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in data?.items ?? []" :key="user.id" class="border-t border-default">
+          <tr v-for="user in data?.items ?? []" :key="user.id" class="border-t border-default hover:bg-elevated/30">
             <td class="p-3">
               {{ user.email }}
             </td>

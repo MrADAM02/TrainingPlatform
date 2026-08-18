@@ -33,21 +33,11 @@ await fetchCourses()
     </p>
 
     <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <NuxtLink v-for="course in data?.items ?? []" :key="course.id" :to="`/courses/${course.id}`">
-        <UCard class="h-full hover:ring-primary transition-shadow">
-          <template #header>
-            <div class="flex items-center justify-between gap-2">
-              <span class="font-medium">{{ course.title }}</span>
-              <UBadge v-if="course.isEnrolled" color="success" variant="subtle">
-                {{ t('courses.enrolled') }}
-              </UBadge>
-            </div>
-          </template>
-          <p class="text-sm text-muted line-clamp-3">
-            {{ course.description }}
-          </p>
-        </UCard>
-      </NuxtLink>
+      <CourseCard
+        v-for="course in data?.items ?? []" :id="course.id" :key="course.id"
+        :title="course.title" :description="course.description" :to="`/courses/${course.id}`"
+        :is-enrolled="course.isEnrolled"
+      />
     </div>
 
     <div v-if="data && data.totalPages > 1" class="flex items-center justify-between mt-4">

@@ -104,20 +104,10 @@ async function confirmDelete() {
     </p>
 
     <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <UCard v-for="course in data?.items ?? []" :key="course.id">
-        <template #header>
-          <div class="flex items-center justify-between gap-2">
-            <span class="font-medium truncate">{{ course.title }}</span>
-            <UBadge :color="course.isPublished ? 'success' : 'neutral'" variant="subtle">
-              {{ course.isPublished ? t('courses.published') : t('courses.draft') }}
-            </UBadge>
-          </div>
-        </template>
-
-        <p class="text-sm text-muted line-clamp-3">
-          {{ course.description }}
-        </p>
-
+      <CourseCard
+        v-for="course in data?.items ?? []" :id="course.id" :key="course.id"
+        :title="course.title" :description="course.description" :is-published="course.isPublished"
+      >
         <template #footer>
           <div class="flex flex-wrap gap-2">
             <UButton size="xs" variant="soft" :label="t('courses.manage')" :to="`/trainer/${course.id}`" />
@@ -129,7 +119,7 @@ async function confirmDelete() {
             <UButton size="xs" variant="soft" color="error" :label="t('courses.delete')" @click="deletingCourse = course" />
           </div>
         </template>
-      </UCard>
+      </CourseCard>
     </div>
 
     <div v-if="data && data.totalPages > 1" class="flex items-center justify-between mt-4">

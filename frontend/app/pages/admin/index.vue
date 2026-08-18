@@ -12,7 +12,12 @@ const { t } = useI18n()
       <NuxtLink to="/admin/users">
         <UCard class="hover:ring-primary transition-shadow">
           <template #header>
-            <span class="font-medium">{{ t('nav.adminUsers') }}</span>
+            <div class="flex items-center gap-2">
+              <div class="flex items-center justify-center size-8 rounded-lg bg-primary/10 text-primary shrink-0">
+                <UIcon name="i-lucide-users" class="size-4" />
+              </div>
+              <span class="font-medium">{{ t('nav.adminUsers') }}</span>
+            </div>
           </template>
           <p class="text-sm text-muted">
             {{ t('admin.hub.usersDescription') }}
@@ -23,7 +28,12 @@ const { t } = useI18n()
       <NuxtLink to="/admin/activity">
         <UCard class="hover:ring-primary transition-shadow">
           <template #header>
-            <span class="font-medium">{{ t('nav.adminActivity') }}</span>
+            <div class="flex items-center gap-2">
+              <div class="flex items-center justify-center size-8 rounded-lg bg-primary/10 text-primary shrink-0">
+                <UIcon name="i-lucide-history" class="size-4" />
+              </div>
+              <span class="font-medium">{{ t('nav.adminActivity') }}</span>
+            </div>
           </template>
           <p class="text-sm text-muted">
             {{ t('admin.hub.activityDescription') }}

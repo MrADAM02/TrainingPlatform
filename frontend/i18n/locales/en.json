@@ -3,6 +3,7 @@
     "name": "Training Platform"
   },
   "nav": {
+    "greeting": "Hi, {name} 👋",
     "dashboard": "Dashboard",
     "admin": "Admin",
     "adminUsers": "Users",
@@ -25,13 +26,19 @@
   "dashboard": {
     "welcome": "Welcome, {name}",
     "role": "Role: {role}",
-    "myCourses": "My Courses",
+    "continueLearning": "Continue Learning",
     "recentlyAdded": "Recently Added",
     "progress": "{completed} of {total} completed",
     "statusActive": "In progress",
     "statusCompleted": "Completed",
     "noCourses": "You're not enrolled in any courses yet.",
-    "noRecent": "Nothing new recently."
+    "noRecent": "Nothing new recently.",
+    "stats": {
+      "enrolled": "Enrolled Courses",
+      "active": "Active",
+      "completed": "Completed",
+      "materials": "Course Materials"
+    }
   },
   "search": {
     "title": "Search",
@@ -41,7 +48,8 @@
     "allCourses": "All courses",
     "allTypes": "All types",
     "noResults": "No results.",
-    "inCourse": "in {course}"
+    "inCourse": "in {course}",
+    "uploadedAt": "Uploaded"
   },
   "admin": {
     "hub": {
@@ -119,6 +127,13 @@
     "view": "View",
     "enrolled": "Enrolled",
     "notEnrolledNotice": "You need to be enrolled to download this course's materials. Contact your administrator or trainer.",
+    "overview": {
+      "title": "Course Overview",
+      "modules": "{count} modules",
+      "materials": "{count} materials",
+      "viewContent": "View Content"
+    },
+    "content": "Course Content",
     "delete": "Delete",
     "save": "Save",
     "cancel": "Cancel",

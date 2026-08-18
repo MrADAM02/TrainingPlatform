@@ -18,6 +18,16 @@ catch {
 function formatDate(value: string): string {
   return new Date(value).toLocaleDateString()
 }
+
+const stats = computed(() => {
+  const courses = dashboard.value?.courses ?? []
+  return {
+    enrolled: courses.length,
+    active: courses.filter(c => c.status === 0).length,
+    completed: courses.filter(c => c.status === 1).length,
+    materials: courses.reduce((sum, c) => sum + c.totalDocuments, 0),
+  }
+})
 </script>
 
 <template>
@@ -25,12 +35,19 @@ function formatDate(value: string): string {
     <h1 class="text-xl font-semibold mb-1">
       {{ t('dashboard.welcome', { name: authStore.user?.fullName }) }}
     </h1>
-    <p class="text-muted mb-8">
+    <p class="text-muted mb-6">
       {{ t('dashboard.role', { role: authStore.user?.roles.join(', ') }) }}
     </p>
 
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <StatCard icon="i-lucide-book-open" :value="stats.enrolled" :label="t('dashboard.stats.enrolled')" />
+      <StatCard icon="i-lucide-play-circle" :value="stats.active" :label="t('dashboard.stats.active')" />
+      <StatCard icon="i-lucide-check-circle" :value="stats.completed" :label="t('dashboard.stats.completed')" />
+      <StatCard icon="i-lucide-file-text" :value="stats.materials" :label="t('dashboard.stats.materials')" />
+    </div>
+
     <h2 class="text-lg font-semibold mb-4">
-      {{ t('dashboard.myCourses') }}
+      {{ t('dashboard.continueLearning') }}
     </h2>
 
     <p v-if="dashboard && dashboard.courses.length === 0" class="text-muted mb-8">
@@ -38,23 +55,22 @@ function formatDate(value: string): string {
     </p>
 
     <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-      <NuxtLink v-for="course in dashboard?.courses ?? []" :key="course.courseId" :to="`/courses/${course.courseId}`">
-        <UCard class="h-full hover:ring-primary transition-shadow">
-          <template #header>
-            <div class="flex items-center justify-between gap-2">
-              <span class="font-medium truncate">{{ course.courseTitle }}</span>
-              <UBadge :color="course.status === 1 ? 'success' : 'primary'" variant="subtle">
-                {{ course.status === 1 ? t('dashboard.statusCompleted') : t('dashboard.statusActive') }}
-              </UBadge>
-            </div>
-          </template>
-
+      <CourseCard
+        v-for="course in dashboard?.courses ?? []" :id="course.courseId" :key="course.courseId"
+        :title="course.courseTitle" :to="`/courses/${course.courseId}`"
+      >
+        <template #footer>
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <UBadge :color="course.status === 1 ? 'success' : 'primary'" variant="subtle">
+              {{ course.status === 1 ? t('dashboard.statusCompleted') : t('dashboard.statusActive') }}
+            </UBadge>
+          </div>
           <UProgress :model-value="course.completedDocuments" :max="course.totalDocuments || 1" class="mb-2" />
           <p class="text-sm text-muted">
             {{ t('dashboard.progress', { completed: course.completedDocuments, total: course.totalDocuments }) }}
           </p>
-        </UCard>
-      </NuxtLink>
+        </template>
+      </CourseCard>
     </div>
 
     <h2 class="text-lg font-semibold mb-4">
@@ -65,15 +81,17 @@ function formatDate(value: string): string {
       {{ t('dashboard.noRecent') }}
     </p>
 
-    <ul v-else class="space-y-2">
-      <li v-for="item in dashboard?.recentlyAdded ?? []" :key="item.documentId" class="text-sm">
-        <NuxtLink :to="`/courses/${item.courseId}`" class="hover:underline">
-          {{ item.documentTitle }}
-        </NuxtLink>
-        <span class="text-muted">
-          — {{ item.courseTitle }} · {{ formatDate(item.uploadedAtUtc) }}
-        </span>
-      </li>
-    </ul>
+    <UCard v-else :ui="{ body: 'p-0 sm:p-0' }">
+      <ul class="divide-y divide-default">
+        <li v-for="item in dashboard?.recentlyAdded ?? []" :key="item.documentId" class="p-3 text-sm">
+          <NuxtLink :to="`/courses/${item.courseId}`" class="hover:underline font-medium">
+            {{ item.documentTitle }}
+          </NuxtLink>
+          <span class="text-muted">
+            — {{ item.courseTitle }} · {{ formatDate(item.uploadedAtUtc) }}
+          </span>
+        </li>
+      </ul>
+    </UCard>
   </div>
 </template>

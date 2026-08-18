@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import type { FormError, FormSubmitEvent } from '@nuxt/ui'
+import type { AccordionItem, FormError, FormSubmitEvent, TableColumn } from '@nuxt/ui'
 import type { CourseDetails, DocumentSummary, EnrollmentSummary, ModuleDetails, ProblemDetails, UploadTicket, UserSummary } from '~/types/api'
 import { documentTypeLabels } from '~/types/api'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { request } = useApi()
 const toast = useToast()
 const route = useRoute()
 const router = useRouter()
+
+const backIcon = computed(() => (locale.value === 'ar' ? 'i-lucide-arrow-right' : 'i-lucide-arrow-left'))
 
 const courseId = route.params.id as string
 const course = ref<CourseDetails | null>(null)
@@ -39,6 +41,31 @@ function formatBytes(bytes: number): string {
   }
   return `${value.toFixed(1)} ${units[unitIndex]}`
 }
+
+const moduleAccordionItems = computed<AccordionItem[]>(() =>
+  (course.value?.modules ?? []).map(module => ({
+    label: `${module.order}. ${module.title}`,
+    value: module.id,
+  })),
+)
+
+function moduleById(id: string) {
+  return course.value?.modules.find(m => m.id === id) ?? null
+}
+
+const documentColumns = computed<TableColumn<DocumentSummary>[]>(() => [
+  { accessorKey: 'title', header: t('courses.documents.title') },
+  { accessorKey: 'sizeBytes', header: t('courses.documents.size') },
+  { id: 'actions', header: '' },
+])
+
+const enrollmentColumns = computed<TableColumn<EnrollmentSummary>[]>(() => [
+  { accessorKey: 'userEmail', header: t('admin.users.email') },
+  { accessorKey: 'userFullName', header: t('admin.users.fullName') },
+  { id: 'status', header: t('courses.status') },
+  { accessorKey: 'enrolledAtUtc', header: t('courses.enrollments.enrolledAt') },
+  { id: 'actions', header: '' },
+])
 
 // --- Edit course ---
 const isEditOpen = ref(false)
@@ -320,7 +347,7 @@ function formatDate(value: string): string {
 
 <template>
   <div v-if="course">
-    <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('courses.back')" to="/trainer" class="mb-4" />
+    <UButton variant="ghost" :icon="backIcon" :label="t('courses.back')" to="/trainer" class="mb-4" />
 
     <div class="flex items-start justify-between gap-4 mb-2">
       <div>
@@ -357,66 +384,59 @@ function formatDate(value: string): string {
       {{ t('courses.modules.empty') }}
     </p>
 
-    <div v-for="module in course.modules" :key="module.id" class="mb-6 rounded-lg border border-default p-4">
-      <div class="flex items-center justify-between mb-3">
-        <span class="font-medium">{{ module.order }}. {{ module.title }}</span>
-        <div class="flex gap-2">
-          <UButton size="xs" variant="soft" :label="t('courses.modules.edit')" @click="openEditModule(module)" />
-          <UButton size="xs" variant="soft" color="error" :label="t('courses.modules.delete')" @click="deletingModule = module" />
-        </div>
-      </div>
+    <UAccordion
+      v-if="course.modules.length > 0" type="multiple" :items="moduleAccordionItems"
+      :default-value="course.modules.map(m => m.id)" class="mb-6"
+    >
+      <template #body="{ item }">
+        <template v-if="moduleById(item.value as string)">
+          <div class="flex justify-end gap-2 mb-3">
+            <UButton size="xs" variant="soft" :label="t('courses.modules.edit')" @click="openEditModule(moduleById(item.value as string)!)" />
+            <UButton size="xs" variant="soft" color="error" :label="t('courses.modules.delete')" @click="deletingModule = moduleById(item.value as string)" />
+          </div>
 
-      <table v-if="module.documents.length > 0" class="w-full text-sm mb-3">
-        <thead>
-          <tr class="text-start text-muted">
-            <th class="text-start p-2 font-medium">
-              {{ t('courses.documents.title') }}
-            </th>
-            <th class="text-start p-2 font-medium">
-              {{ t('courses.documents.size') }}
-            </th>
-            <th class="text-start p-2 font-medium" />
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="doc in module.documents" :key="doc.id" class="border-t border-default">
-            <td class="p-2">
-              {{ doc.title }}
-              <UBadge variant="subtle" size="sm" class="ms-2">
-                {{ documentTypeLabels[doc.fileType] }}
-              </UBadge>
-            </td>
-            <td class="p-2">
-              {{ formatBytes(doc.sizeBytes) }}
-            </td>
-            <td class="p-2">
-              <div class="flex justify-end gap-2">
-                <UButton size="xs" variant="soft" :label="t('courses.documents.download')" @click="downloadDocument(doc)" />
-                <UButton size="xs" variant="soft" color="error" :label="t('courses.documents.delete')" @click="deletingDocument = doc" />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else class="text-sm text-muted mb-3">
-        {{ t('courses.documents.empty') }}
-      </p>
+          <div v-if="moduleById(item.value as string)!.documents.length > 0" class="overflow-x-auto mb-3">
+            <UTable
+              :data="moduleById(item.value as string)!.documents" :columns="documentColumns"
+            >
+              <template #title-cell="{ row }">
+                {{ row.original.title }}
+                <UBadge variant="subtle" size="sm" class="ms-2">
+                  {{ documentTypeLabels[row.original.fileType] }}
+                </UBadge>
+              </template>
+              <template #sizeBytes-cell="{ row }">
+                {{ formatBytes(row.original.sizeBytes) }}
+              </template>
+              <template #actions-cell="{ row }">
+                <div class="flex justify-end gap-2">
+                  <UButton size="xs" variant="soft" :label="t('courses.documents.download')" @click="downloadDocument(row.original)" />
+                  <UButton size="xs" variant="soft" color="error" :label="t('courses.documents.delete')" @click="deletingDocument = row.original" />
+                </div>
+              </template>
+            </UTable>
+          </div>
+          <p v-else class="text-sm text-muted mb-3">
+            {{ t('courses.documents.empty') }}
+          </p>
 
-      <UFileUpload
-        :model-value="null"
-        :disabled="uploadingModuleId === module.id"
-        @update:model-value="(file) => handleFileSelected(module.id, file)"
-      >
-        <template #default="{ open }">
-          <UButton
-            size="xs" variant="outline" icon="i-lucide-upload"
-            :loading="uploadingModuleId === module.id"
-            :label="uploadingModuleId === module.id ? t('courses.documents.uploading') : t('courses.documents.upload')"
-            @click="() => open()"
-          />
+          <UFileUpload
+            :model-value="null"
+            :disabled="uploadingModuleId === item.value"
+            @update:model-value="(file) => handleFileSelected(item.value as string, file)"
+          >
+            <template #default="{ open }">
+              <UButton
+                size="xs" variant="outline" icon="i-lucide-upload"
+                :loading="uploadingModuleId === item.value"
+                :label="uploadingModuleId === item.value ? t('courses.documents.uploading') : t('courses.documents.upload')"
+                @click="() => open()"
+              />
+            </template>
+          </UFileUpload>
         </template>
-      </UFileUpload>
-    </div>
+      </template>
+    </UAccordion>
 
     <div class="flex items-center justify-between mb-4 mt-8">
       <h2 class="text-lg font-semibold">
@@ -429,46 +449,23 @@ function formatDate(value: string): string {
       {{ t('courses.enrollments.empty') }}
     </p>
 
-    <table v-else class="w-full text-sm">
-      <thead>
-        <tr class="text-muted">
-          <th class="text-start p-2 font-medium">
-            {{ t('admin.users.email') }}
-          </th>
-          <th class="text-start p-2 font-medium">
-            {{ t('admin.users.fullName') }}
-          </th>
-          <th class="text-start p-2 font-medium">
-            {{ t('courses.status') }}
-          </th>
-          <th class="text-start p-2 font-medium">
-            {{ t('courses.enrollments.enrolledAt') }}
-          </th>
-          <th class="text-start p-2 font-medium" />
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="enrollment in enrollments" :key="enrollment.id" class="border-t border-default">
-          <td class="p-2">
-            {{ enrollment.userEmail }}
-          </td>
-          <td class="p-2">
-            {{ enrollment.userFullName }}
-          </td>
-          <td class="p-2">
-            <UBadge :color="enrollment.status === 1 ? 'success' : 'primary'" variant="subtle">
-              {{ enrollment.status === 1 ? t('courses.enrollments.statusCompleted') : t('courses.enrollments.statusActive') }}
-            </UBadge>
-          </td>
-          <td class="p-2">
-            {{ formatDate(enrollment.enrolledAtUtc) }}
-          </td>
-          <td class="p-2 text-end">
-            <UButton size="xs" variant="soft" color="error" :label="t('courses.enrollments.unenroll')" @click="removingEnrollment = enrollment" />
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div v-else class="overflow-x-auto">
+      <UTable :data="enrollments" :columns="enrollmentColumns">
+        <template #status-cell="{ row }">
+          <UBadge :color="row.original.status === 1 ? 'success' : 'primary'" variant="subtle">
+            {{ row.original.status === 1 ? t('courses.enrollments.statusCompleted') : t('courses.enrollments.statusActive') }}
+          </UBadge>
+        </template>
+        <template #enrolledAtUtc-cell="{ row }">
+          {{ formatDate(row.original.enrolledAtUtc) }}
+        </template>
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end">
+            <UButton size="xs" variant="soft" color="error" :label="t('courses.enrollments.unenroll')" @click="removingEnrollment = row.original" />
+          </div>
+        </template>
+      </UTable>
+    </div>
 
     <!-- Edit course -->
     <UModal v-model:open="isEditOpen" :title="t('courses.edit')">

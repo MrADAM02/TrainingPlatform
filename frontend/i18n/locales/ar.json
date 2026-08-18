@@ -3,6 +3,7 @@
     "name": "منصة التدريب"
   },
   "nav": {
+    "greeting": "مرحباً، {name} 👋",
     "dashboard": "لوحة التحكم",
     "admin": "الإدارة",
     "adminUsers": "المستخدمون",
@@ -25,13 +26,19 @@
   "dashboard": {
     "welcome": "مرحباً، {name}",
     "role": "الدور: {role}",
-    "myCourses": "دوراتي",
+    "continueLearning": "متابعة التعلّم",
     "recentlyAdded": "أُضيف مؤخراً",
     "progress": "اكتمل {completed} من {total}",
     "statusActive": "قيد التقدم",
     "statusCompleted": "مكتملة",
     "noCourses": "لست مسجلاً في أي دورة بعد.",
-    "noRecent": "لا يوجد جديد مؤخراً."
+    "noRecent": "لا يوجد جديد مؤخراً.",
+    "stats": {
+      "enrolled": "الدورات المسجّلة",
+      "active": "قيد التقدم",
+      "completed": "مكتملة",
+      "materials": "المواد التعليمية"
+    }
   },
   "search": {
     "title": "بحث",
@@ -41,7 +48,8 @@
     "allCourses": "جميع الدورات",
     "allTypes": "جميع الأنواع",
     "noResults": "لا توجد نتائج.",
-    "inCourse": "في {course}"
+    "inCourse": "في {course}",
+    "uploadedAt": "تاريخ الرفع"
   },
   "admin": {
     "hub": {
@@ -119,6 +127,13 @@
     "view": "عرض",
     "enrolled": "مسجّل",
     "notEnrolledNotice": "يجب أن تكون مسجلاً للتمكن من تنزيل مواد هذه الدورة. تواصل مع المسؤول أو المدرب.",
+    "overview": {
+      "title": "نظرة عامة على الدورة",
+      "modules": "{count} وحدات",
+      "materials": "{count} مواد",
+      "viewContent": "عرض المحتوى"
+    },
+    "content": "محتوى الدورة",
     "delete": "حذف",
     "save": "حفظ",
     "cancel": "إلغاء",

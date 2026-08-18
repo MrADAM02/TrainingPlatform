@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
 import type { ActivityLogItem, PaginatedList } from '~/types/api'
 
 const { t } = useI18n()
@@ -30,6 +31,14 @@ await fetchLog()
 function formatDate(value: string): string {
   return new Date(value).toLocaleString()
 }
+
+const columns = computed<TableColumn<ActivityLogItem>[]>(() => [
+  { accessorKey: 'timestampUtc', header: t('admin.activity.timestamp') },
+  { accessorKey: 'userEmail', header: t('admin.activity.actor') },
+  { accessorKey: 'action', header: t('admin.activity.action') },
+  { id: 'entity', header: t('admin.activity.entity') },
+  { accessorKey: 'ipAddress', header: t('admin.activity.ipAddress') },
+])
 
 async function exportCsv() {
   isExporting.value = true
@@ -63,49 +72,23 @@ async function exportCsv() {
       />
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-default">
-      <table class="w-full text-sm">
-        <thead class="bg-elevated/50">
-          <tr>
-            <th class="text-start p-3 font-medium">
-              {{ t('admin.activity.timestamp') }}
-            </th>
-            <th class="text-start p-3 font-medium">
-              {{ t('admin.activity.actor') }}
-            </th>
-            <th class="text-start p-3 font-medium">
-              {{ t('admin.activity.action') }}
-            </th>
-            <th class="text-start p-3 font-medium">
-              {{ t('admin.activity.entity') }}
-            </th>
-            <th class="text-start p-3 font-medium">
-              {{ t('admin.activity.ipAddress') }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="entry in data?.items ?? []" :key="entry.id" class="border-t border-default">
-            <td class="p-3 whitespace-nowrap">
-              {{ formatDate(entry.timestampUtc) }}
-            </td>
-            <td class="p-3">
-              {{ entry.userEmail ?? entry.userId }}
-            </td>
-            <td class="p-3">
-              <UBadge variant="subtle">
-                {{ entry.action }}
-              </UBadge>
-            </td>
-            <td class="p-3">
-              {{ entry.entityType }}<span v-if="entry.entityId" class="text-muted"> #{{ entry.entityId.slice(0, 8) }}</span>
-            </td>
-            <td class="p-3">
-              {{ entry.ipAddress }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="overflow-x-auto">
+      <UTable :data="data?.items ?? []" :columns="columns" :loading="pending">
+        <template #timestampUtc-cell="{ row }">
+          <span class="whitespace-nowrap">{{ formatDate(row.original.timestampUtc) }}</span>
+        </template>
+        <template #userEmail-cell="{ row }">
+          {{ row.original.userEmail ?? row.original.userId }}
+        </template>
+        <template #action-cell="{ row }">
+          <UBadge variant="subtle">
+            {{ row.original.action }}
+          </UBadge>
+        </template>
+        <template #entity-cell="{ row }">
+          {{ row.original.entityType }}<span v-if="row.original.entityId" class="text-muted"> #{{ row.original.entityId.slice(0, 8) }}</span>
+        </template>
+      </UTable>
     </div>
 
     <div v-if="data && data.totalPages > 1" class="flex items-center justify-between mt-4">

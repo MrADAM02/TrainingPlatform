@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
 import type { CourseSummary, DocumentSearchResult, DocumentTypeName, PaginatedList } from '~/types/api'
 import { documentTypeLabels, documentTypeNames } from '~/types/api'
 
@@ -55,6 +56,17 @@ watch([courseId, contentType, page], runSearch)
 
 await Promise.all([loadCourses(), runSearch()])
 
+const resultColumns = computed<TableColumn<DocumentSearchResult>[]>(() => [
+  { accessorKey: 'documentTitle', header: t('courses.documents.title') },
+  { accessorKey: 'courseTitle', header: t('search.course') },
+  { accessorKey: 'uploadedAtUtc', header: t('search.uploadedAt') },
+  { id: 'actions', header: '' },
+])
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString()
+}
+
 async function downloadDocument(result: DocumentSearchResult) {
   try {
     const response = await request<{ url: string }>(`/documents/${result.documentId}/download-url`)
@@ -85,24 +97,27 @@ async function downloadDocument(result: DocumentSearchResult) {
       {{ t('search.noResults') }}
     </p>
 
-    <ul v-else class="space-y-2">
-      <li
-        v-for="item in results?.items ?? []" :key="item.documentId"
-        class="flex items-center justify-between border-b border-default pb-2 text-sm"
-      >
-        <span>
-          {{ item.documentTitle }}
+    <div v-else class="overflow-x-auto">
+      <UTable :data="results?.items ?? []" :columns="resultColumns">
+        <template #documentTitle-cell="{ row }">
+          {{ row.original.documentTitle }}
           <UBadge variant="subtle" size="sm" class="ms-2">
-            {{ documentTypeLabels[item.fileType] }}
+            {{ documentTypeLabels[row.original.fileType] }}
           </UBadge>
-          <span class="text-muted ms-2">{{ t('search.inCourse', { course: item.courseTitle }) }}</span>
-        </span>
-        <UButton
-          size="xs" variant="soft" :disabled="!item.canDownload"
-          :label="t('courses.documents.download')" @click="downloadDocument(item)"
-        />
-      </li>
-    </ul>
+        </template>
+        <template #uploadedAtUtc-cell="{ row }">
+          {{ formatDate(row.original.uploadedAtUtc) }}
+        </template>
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end">
+            <UButton
+              size="xs" variant="soft" :disabled="!row.original.canDownload"
+              :label="t('courses.documents.download')" @click="downloadDocument(row.original)"
+            />
+          </div>
+        </template>
+      </UTable>
+    </div>
 
     <div v-if="results && results.totalPages > 1" class="flex items-center justify-between mt-4">
       <span class="text-sm text-muted">{{ t('pagination.pageOf', { page: results.page, totalPages: results.totalPages }) }}</span>
