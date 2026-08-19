@@ -76,7 +76,7 @@ async function downloadDocument(doc: DocumentSummary) {
 
     <div class="grid lg:grid-cols-3 gap-6">
       <div class="lg:order-2 lg:col-span-1 space-y-4">
-        <UCard class="lg:sticky lg:top-4">
+        <UCard class="lg:sticky lg:top-20">
           <template #header>
             <span class="font-medium">{{ t('courses.overview.title') }}</span>
           </template>
@@ -106,7 +106,7 @@ async function downloadDocument(doc: DocumentSummary) {
         />
       </div>
 
-      <div id="course-content" class="lg:order-1 lg:col-span-2">
+      <div id="course-content" class="lg:order-1 lg:col-span-2 scroll-mt-20">
         <p class="text-muted mb-4">
           {{ course.description }}
         </p>

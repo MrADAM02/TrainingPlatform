@@ -19,10 +19,14 @@ withDefaults(defineProps<{
 })
 
 const { t } = useI18n()
+
+// resolveComponent, not the string 'NuxtLink', so :is actually resolves to the component
+// instead of rendering an inert <NuxtLink> custom-element tag with no click behavior.
+const NuxtLinkComponent = resolveComponent('NuxtLink')
 </script>
 
 <template>
-  <component :is="to ? 'NuxtLink' : 'div'" :to="to" class="block h-full">
+  <component :is="to ? NuxtLinkComponent : 'div'" :to="to" class="block h-full">
     <UCard class="h-full overflow-hidden p-0 gap-0" :class="to ? 'hover:ring-primary transition-shadow' : ''" :ui="{ body: 'p-4 sm:p-4' }">
       <CourseCoverPlaceholder :id="id" :title="title" size="md">
         <UBadge

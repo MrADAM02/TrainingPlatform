@@ -1,19 +1,9 @@
 <template>
-  <UDashboardGroup>
-    <AppSidebar />
+  <div class="min-h-screen flex flex-col">
+    <AppHeader />
 
-    <UDashboardPanel>
-      <template #header>
-        <UDashboardNavbar>
-          <template #right>
-            <AppUserMenu />
-          </template>
-        </UDashboardNavbar>
-      </template>
-
-      <template #body>
-        <slot />
-      </template>
-    </UDashboardPanel>
-  </UDashboardGroup>
+    <main class="flex-1 p-4 sm:p-6">
+      <slot />
+    </main>
+  </div>
 </template>

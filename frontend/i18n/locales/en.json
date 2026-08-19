@@ -4,6 +4,7 @@
   },
   "nav": {
     "greeting": "Hi, {name} 👋",
+    "menu": "Menu",
     "dashboard": "Dashboard",
     "admin": "Admin",
     "adminUsers": "Users",
@@ -11,7 +12,11 @@
     "trainer": "My Courses",
     "courses": "Courses",
     "search": "Search",
-    "logout": "Log out"
+    "logout": "Log out",
+    "colorMode": {
+      "light": "Light",
+      "dark": "Dark"
+    }
   },
   "auth": {
     "login": {

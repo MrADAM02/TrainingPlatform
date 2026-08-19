@@ -4,6 +4,7 @@
   },
   "nav": {
     "greeting": "مرحباً، {name} 👋",
+    "menu": "القائمة",
     "dashboard": "لوحة التحكم",
     "admin": "الإدارة",
     "adminUsers": "المستخدمون",
@@ -11,7 +12,11 @@
     "trainer": "دوراتي",
     "courses": "الدورات",
     "search": "بحث",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "colorMode": {
+      "light": "فاتح",
+      "dark": "داكن"
+    }
   },
   "auth": {
     "login": {
