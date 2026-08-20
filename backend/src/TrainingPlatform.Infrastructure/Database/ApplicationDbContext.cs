@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TrainingPlatform.Application.Abstractions.Data;
 using TrainingPlatform.Domain.Activity;
+using TrainingPlatform.Domain.Certificates;
 using TrainingPlatform.Domain.Content;
 using TrainingPlatform.Domain.Enrollments;
 using TrainingPlatform.Infrastructure.Identity;
@@ -25,6 +26,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
 
     public DbSet<Progress> Progresses => Set<Progress>();
+
+    public DbSet<Certificate> Certificates => Set<Certificate>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -138,6 +141,20 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
                 .WithMany()
                 .HasForeignKey(p => p.DocumentId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Certificate>(entity =>
+        {
+            entity.ToTable("certificates");
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.CourseTitle).IsRequired().HasMaxLength(200);
+            entity.Property(c => c.RecipientFullName).IsRequired().HasMaxLength(200);
+            entity.Property(c => c.CertificateNumber).IsRequired().HasMaxLength(50);
+            entity.HasIndex(c => c.CertificateNumber).IsUnique();
+            entity.HasIndex(c => new { c.UserId, c.CourseId }).IsUnique();
+
+            // Deliberately no FK to users/courses, same reasoning as ActivityLog: a certificate
+            // is a permanent achievement record and must survive deletion of either.
         });
     }
 }

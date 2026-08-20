@@ -12,6 +12,7 @@
     "trainer": "دوراتي",
     "courses": "الدورات",
     "search": "بحث",
+    "certificates": "الشهادات",
     "logout": "تسجيل الخروج",
     "colorMode": {
       "light": "فاتح",
@@ -195,6 +196,18 @@
       "confirmUnenrollBody": "سيفقد الوصول إلى مواد هذه الدورة.",
       "close": "إغلاق"
     }
+  },
+  "certificates": {
+    "title": "الشهادات",
+    "empty": "لم تحصل على أي شهادة بعد. أكمل دورة للحصول على شهادة.",
+    "issuedOn": "صدرت في {date}",
+    "view": "عرض",
+    "notFound": "الشهادة غير موجودة.",
+    "certifyText": "تشهد هذه الوثيقة بأن",
+    "completedText": "قد أكمل بنجاح دورة",
+    "certificateNumber": "رقم الشهادة {number}",
+    "print": "طباعة / حفظ كملف PDF",
+    "back": "العودة إلى الشهادات"
   },
   "pagination": {
     "pageOf": "صفحة {page} من {totalPages}"

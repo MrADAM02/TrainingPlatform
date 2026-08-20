@@ -19,6 +19,8 @@ public sealed class CurrentUserContext(IHttpContextAccessor httpContextAccessor)
         }
     }
 
+    public string FullName => Principal?.FindFirstValue("full_name") ?? string.Empty;
+
     public bool IsAuthenticated => Principal?.Identity?.IsAuthenticated ?? false;
 
     public IReadOnlyCollection<string> Roles =>

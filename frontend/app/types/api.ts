@@ -154,3 +154,20 @@ export interface DocumentSearchResult {
   uploadedAtUtc: string
   canDownload: boolean
 }
+
+export interface CertificateSummary {
+  id: string
+  courseId: string
+  courseTitle: string
+  certificateNumber: string
+  issuedAtUtc: string
+}
+
+export interface CertificateDetails {
+  id: string
+  courseId: string
+  courseTitle: string
+  recipientFullName: string
+  certificateNumber: string
+  issuedAtUtc: string
+}

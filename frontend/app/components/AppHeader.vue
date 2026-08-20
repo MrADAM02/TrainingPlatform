@@ -19,7 +19,7 @@ const menuItems = computed(() => [
 </script>
 
 <template>
-  <header class="sticky top-0 z-40 bg-default border-b border-default">
+  <header class="print:hidden sticky top-0 z-40 bg-default border-b border-default">
     <div class="flex items-center justify-between gap-4 px-4 sm:px-6 h-16">
       <div class="flex items-center gap-2">
         <UButton

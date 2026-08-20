@@ -55,22 +55,28 @@ const stats = computed(() => {
     </p>
 
     <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-      <CourseCard
-        v-for="course in dashboard?.courses ?? []" :id="course.courseId" :key="course.courseId"
-        :title="course.courseTitle" :to="`/courses/${course.courseId}`"
-      >
-        <template #footer>
-          <div class="flex items-center justify-between gap-2 mb-2">
-            <UBadge :color="course.status === 1 ? 'success' : 'primary'" variant="subtle">
-              {{ course.status === 1 ? t('dashboard.statusCompleted') : t('dashboard.statusActive') }}
-            </UBadge>
-          </div>
-          <UProgress :model-value="course.completedDocuments" :max="course.totalDocuments || 1" class="mb-2" />
-          <p class="text-sm text-muted">
-            {{ t('dashboard.progress', { completed: course.completedDocuments, total: course.totalDocuments }) }}
-          </p>
-        </template>
-      </CourseCard>
+      <!-- The certificate button below lives outside CourseCard's own link wrapper — nesting
+           an interactive element inside it would produce an invalid <a>/<button> inside <a>. -->
+      <div v-for="course in dashboard?.courses ?? []" :key="course.courseId">
+        <CourseCard :id="course.courseId" :title="course.courseTitle" :to="`/courses/${course.courseId}`">
+          <template #footer>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <UBadge :color="course.status === 1 ? 'success' : 'primary'" variant="subtle">
+                {{ course.status === 1 ? t('dashboard.statusCompleted') : t('dashboard.statusActive') }}
+              </UBadge>
+            </div>
+            <UProgress :model-value="course.completedDocuments" :max="course.totalDocuments || 1" class="mb-2" />
+            <p class="text-sm text-muted">
+              {{ t('dashboard.progress', { completed: course.completedDocuments, total: course.totalDocuments }) }}
+            </p>
+          </template>
+        </CourseCard>
+
+        <UButton
+          v-if="course.status === 1" variant="soft" size="xs" icon="i-lucide-award"
+          :label="t('certificates.view')" to="/certificates" class="mt-2"
+        />
+      </div>
     </div>
 
     <h2 class="text-lg font-semibold mb-4">

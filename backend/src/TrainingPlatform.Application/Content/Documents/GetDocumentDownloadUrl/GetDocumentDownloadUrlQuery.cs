@@ -5,6 +5,7 @@ using TrainingPlatform.Application.Abstractions.Data;
 using TrainingPlatform.Application.Abstractions.Messaging;
 using TrainingPlatform.Application.Abstractions.Storage;
 using TrainingPlatform.Domain.Activity;
+using TrainingPlatform.Domain.Certificates;
 using TrainingPlatform.Domain.Common;
 using TrainingPlatform.Domain.Content;
 using TrainingPlatform.Domain.Enrollments;
@@ -40,7 +41,7 @@ public sealed class GetDocumentDownloadUrlQueryHandler(
             return Result.Failure<string>(ContentErrors.CourseNotAccessible);
         }
 
-        await RecordProgressIfEnrolledAsync(course.Id, document.Id, cancellationToken);
+        await RecordProgressIfEnrolledAsync(course, document.Id, cancellationToken);
 
         var url = await fileStorage.GetDownloadUrlAsync(document.StorageKey, cancellationToken);
 
@@ -52,11 +53,12 @@ public sealed class GetDocumentDownloadUrlQueryHandler(
 
     /// <summary>REQ-ENR-02/03: consuming a document records progress for the caller's own
     /// enrollment (no-op for Admin/Trainer previewing via ownership, since they have none), and
-    /// once every document in the course has been consumed the enrollment is auto-completed.</summary>
-    private async Task RecordProgressIfEnrolledAsync(Guid courseId, Guid documentId, CancellationToken cancellationToken)
+    /// once every document in the course has been consumed the enrollment is auto-completed and
+    /// a certificate is issued (REQ-CERT-01).</summary>
+    private async Task RecordProgressIfEnrolledAsync(Course course, Guid documentId, CancellationToken cancellationToken)
     {
         var enrollment = await dbContext.Enrollments
-            .SingleOrDefaultAsync(e => e.CourseId == courseId && e.UserId == currentUser.UserId, cancellationToken);
+            .SingleOrDefaultAsync(e => e.CourseId == course.Id && e.UserId == currentUser.UserId, cancellationToken);
 
         if (enrollment is null)
         {
@@ -75,7 +77,7 @@ public sealed class GetDocumentDownloadUrlQueryHandler(
         if (enrollment.Status == EnrollmentStatus.Active)
         {
             var moduleIds = await dbContext.Modules
-                .Where(m => m.CourseId == courseId)
+                .Where(m => m.CourseId == course.Id)
                 .Select(m => m.Id)
                 .ToListAsync(cancellationToken);
 
@@ -88,8 +90,23 @@ public sealed class GetDocumentDownloadUrlQueryHandler(
             if (totalDocuments > 0 && completedDocuments >= totalDocuments)
             {
                 enrollment.MarkCompleted();
+                await IssueCertificateIfNotAlreadyIssuedAsync(course, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
+    }
+
+    private async Task IssueCertificateIfNotAlreadyIssuedAsync(Course course, CancellationToken cancellationToken)
+    {
+        var alreadyIssued = await dbContext.Certificates
+            .AnyAsync(c => c.UserId == currentUser.UserId && c.CourseId == course.Id, cancellationToken);
+
+        if (alreadyIssued)
+        {
+            return;
+        }
+
+        dbContext.Certificates.Add(
+            Certificate.Create(currentUser.UserId, course.Id, course.Title, currentUser.FullName));
     }
 }

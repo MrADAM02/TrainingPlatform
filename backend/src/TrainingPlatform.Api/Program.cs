@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using TrainingPlatform.Api.Endpoints.Activity;
 using TrainingPlatform.Api.Endpoints.Auth;
+using TrainingPlatform.Api.Endpoints.Certificates;
 using TrainingPlatform.Api.Endpoints.Courses;
 using TrainingPlatform.Api.Endpoints.Dashboard;
 using TrainingPlatform.Api.Endpoints.Documents;
@@ -92,5 +93,6 @@ app.MapDocumentEndpoints();
 app.MapEnrollmentEndpoints();
 app.MapDashboardEndpoints();
 app.MapSearchEndpoints();
+app.MapCertificateEndpoints();
 
 app.Run();

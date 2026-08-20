@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TrainingPlatform.Domain.Certificates;
 using TrainingPlatform.Domain.Content;
 using TrainingPlatform.Domain.Enrollments;
 
@@ -20,6 +21,8 @@ public interface IApplicationDbContext
     DbSet<Enrollment> Enrollments { get; }
 
     DbSet<Progress> Progresses { get; }
+
+    DbSet<Certificate> Certificates { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

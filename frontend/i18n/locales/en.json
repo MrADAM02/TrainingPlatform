@@ -12,6 +12,7 @@
     "trainer": "My Courses",
     "courses": "Courses",
     "search": "Search",
+    "certificates": "Certificates",
     "logout": "Log out",
     "colorMode": {
       "light": "Light",
@@ -195,6 +196,18 @@
       "confirmUnenrollBody": "They will lose access to this course's materials.",
       "close": "Close"
     }
+  },
+  "certificates": {
+    "title": "Certificates",
+    "empty": "You haven't earned any certificates yet. Complete a course to earn one.",
+    "issuedOn": "Issued {date}",
+    "view": "View",
+    "notFound": "Certificate not found.",
+    "certifyText": "This certifies that",
+    "completedText": "has successfully completed the course",
+    "certificateNumber": "Certificate No. {number}",
+    "print": "Print / Save as PDF",
+    "back": "Back to Certificates"
   },
   "pagination": {
     "pageOf": "Page {page} of {totalPages}"
