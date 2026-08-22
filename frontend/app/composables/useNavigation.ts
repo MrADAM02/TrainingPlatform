@@ -25,7 +25,10 @@ export function useNavigation(): ComputedRef<AppNavGroups> {
       { labelKey: 'nav.certificates', icon: 'i-lucide-award', to: '/certificates' },
     ],
     trainer: authStore.hasRole('Trainer') || authStore.hasRole('Administrator')
-      ? [{ labelKey: 'nav.trainer', icon: 'i-lucide-graduation-cap', to: '/trainer' }]
+      ? [
+          { labelKey: 'nav.trainer', icon: 'i-lucide-graduation-cap', to: '/trainer' },
+          { labelKey: 'nav.reports', icon: 'i-lucide-bar-chart-3', to: '/reports' },
+        ]
       : [],
     admin: authStore.hasRole('Administrator')
       ? [{ labelKey: 'nav.admin', icon: 'i-lucide-shield', to: '/admin' }]

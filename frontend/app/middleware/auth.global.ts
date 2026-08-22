@@ -29,4 +29,12 @@ export default defineNuxtRouteMiddleware((to) => {
   ) {
     return navigateTo('/dashboard')
   }
+
+  if (
+    to.path.startsWith('/reports')
+    && !authStore.hasRole('Trainer')
+    && !authStore.hasRole('Administrator')
+  ) {
+    return navigateTo('/dashboard')
+  }
 })

@@ -255,3 +255,35 @@ export interface QuizAttemptResult {
   certificateIssued: boolean
   certificateId: string | null
 }
+
+export interface OrgSummaryReport {
+  totalCourses: number
+  publishedCourses: number
+  totalEnrollments: number
+  completedEnrollments: number
+  totalCertificatesIssued: number
+  activeTraineesLast30Days: number
+}
+
+export interface CourseCompletionReportItem {
+  courseId: string
+  courseTitle: string
+  isPublished: boolean
+  enrolledCount: number
+  completedCount: number
+  completionPercent: number
+  avgCompletionDays: number | null
+}
+
+export interface TraineeProgressReportItem {
+  userId: string
+  userEmail: string
+  userFullName: string
+  status: number
+  enrolledAtUtc: string
+  completedDocuments: number
+  totalDocuments: number
+  requiredQuizzesPassed: number
+  requiredQuizzesTotal: number
+  certificateIssued: boolean
+}

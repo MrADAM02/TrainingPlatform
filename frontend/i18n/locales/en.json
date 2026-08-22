@@ -10,6 +10,7 @@
     "adminUsers": "Users",
     "adminActivity": "Activity Log",
     "trainer": "My Courses",
+    "reports": "Reports",
     "courses": "Courses",
     "search": "Search",
     "certificates": "Certificates",
@@ -233,6 +234,40 @@
       "certificateIssued": "You've completed every requirement for this course. Your certificate is ready.",
       "viewCertificate": "View certificate",
       "answerAllQuestions": "Answer every question before submitting."
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "summary": {
+      "totalCourses": "Total Courses",
+      "publishedCourses": "Published",
+      "totalEnrollments": "Enrollments",
+      "completedEnrollments": "Completions",
+      "totalCertificatesIssued": "Certificates Issued",
+      "activeTrainees": "Active Trainees (30d)"
+    },
+    "courses": {
+      "title": "Course Completion",
+      "export": "Export CSV",
+      "empty": "No courses to report on yet.",
+      "course": "Course",
+      "enrolled": "Enrolled",
+      "completed": "Completed",
+      "completionRate": "Completion Rate",
+      "avgCompletionTime": "Avg. Time to Complete",
+      "avgDays": "{days} days",
+      "viewTrainees": "View trainees"
+    },
+    "trainees": {
+      "title": "Trainee Progress",
+      "backToReports": "Back to Reports",
+      "empty": "No trainees enrolled in this course yet.",
+      "trainee": "Trainee",
+      "status": "Status",
+      "documents": "Documents",
+      "quizzes": "Required Quizzes",
+      "certificate": "Certificate",
+      "noRequiredQuizzes": "None required"
     }
   },
   "certificates": {

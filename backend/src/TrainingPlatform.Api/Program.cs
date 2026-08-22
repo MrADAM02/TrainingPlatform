@@ -11,6 +11,7 @@ using TrainingPlatform.Api.Endpoints.Documents;
 using TrainingPlatform.Api.Endpoints.Enrollments;
 using TrainingPlatform.Api.Endpoints.Modules;
 using TrainingPlatform.Api.Endpoints.Quizzes;
+using TrainingPlatform.Api.Endpoints.Reports;
 using TrainingPlatform.Api.Endpoints.Search;
 using TrainingPlatform.Api.Endpoints.Users;
 using TrainingPlatform.Application;
@@ -96,5 +97,6 @@ app.MapDashboardEndpoints();
 app.MapSearchEndpoints();
 app.MapCertificateEndpoints();
 app.MapQuizEndpoints();
+app.MapReportEndpoints();
 
 app.Run();

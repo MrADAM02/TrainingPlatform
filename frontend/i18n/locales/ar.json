@@ -10,6 +10,7 @@
     "adminUsers": "المستخدمون",
     "adminActivity": "سجل النشاط",
     "trainer": "دوراتي",
+    "reports": "التقارير",
     "courses": "الدورات",
     "search": "بحث",
     "certificates": "الشهادات",
@@ -233,6 +234,40 @@
       "certificateIssued": "لقد أكملت جميع متطلبات هذه الدورة. شهادتك جاهزة.",
       "viewCertificate": "عرض الشهادة",
       "answerAllQuestions": "أجب عن جميع الأسئلة قبل الإرسال."
+    }
+  },
+  "reports": {
+    "title": "التقارير",
+    "summary": {
+      "totalCourses": "إجمالي الدورات",
+      "publishedCourses": "المنشورة",
+      "totalEnrollments": "التسجيلات",
+      "completedEnrollments": "الإكمالات",
+      "totalCertificatesIssued": "الشهادات الصادرة",
+      "activeTrainees": "المتدربون النشطون (30 يوماً)"
+    },
+    "courses": {
+      "title": "إكمال الدورات",
+      "export": "تصدير CSV",
+      "empty": "لا توجد دورات لعرض تقرير عنها بعد.",
+      "course": "الدورة",
+      "enrolled": "المسجّلون",
+      "completed": "المكتملون",
+      "completionRate": "نسبة الإكمال",
+      "avgCompletionTime": "متوسط وقت الإكمال",
+      "avgDays": "{days} أيام",
+      "viewTrainees": "عرض المتدربين"
+    },
+    "trainees": {
+      "title": "تقدّم المتدربين",
+      "backToReports": "العودة إلى التقارير",
+      "empty": "لا يوجد متدربون مسجلون في هذه الدورة بعد.",
+      "trainee": "المتدرب",
+      "status": "الحالة",
+      "documents": "المستندات",
+      "quizzes": "الاختبارات المطلوبة",
+      "certificate": "الشهادة",
+      "noRequiredQuizzes": "لا يوجد مطلوب"
     }
   },
   "certificates": {
