@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AccordionItem, FormError, FormSubmitEvent, TableColumn } from '@nuxt/ui'
-import type { CourseDetails, DocumentSummary, EnrollmentSummary, ModuleDetails, ProblemDetails, UploadTicket, UserSummary } from '~/types/api'
+import type { CourseDetails, DocumentSummary, EnrollmentSummary, ModuleDetails, ProblemDetails, QuizSummary, UploadTicket, UserSummary } from '~/types/api'
 import { documentTypeLabels } from '~/types/api'
 
 const { t, locale } = useI18n()
@@ -246,6 +246,35 @@ async function confirmDeleteDocument() {
   }
 }
 
+// --- Quizzes ---
+function openCreateQuiz(moduleId: string) {
+  router.push(`/trainer/quizzes/new?moduleId=${moduleId}`)
+}
+
+function openEditQuiz(quizId: string) {
+  router.push(`/trainer/quizzes/${quizId}`)
+}
+
+const deletingQuiz = ref<QuizSummary | null>(null)
+const isDeleteQuizOpen = computed({
+  get: () => deletingQuiz.value !== null,
+  set: (value: boolean) => { if (!value) deletingQuiz.value = null },
+})
+
+async function confirmDeleteQuiz() {
+  if (!deletingQuiz.value) return
+  try {
+    await request(`/quizzes/${deletingQuiz.value.id}`, { method: 'DELETE' })
+    toast.add({ title: t('courses.quizzes.deleteSuccess'), color: 'success' })
+    deletingQuiz.value = null
+    await fetchCourse()
+  }
+  catch (error) {
+    toast.add({ title: errorDetail(error, t('common.error')), color: 'error' })
+    deletingQuiz.value = null
+  }
+}
+
 // --- Enrollments ---
 const enrollments = ref<EnrollmentSummary[]>([])
 
@@ -434,6 +463,37 @@ function formatDate(value: string): string {
               />
             </template>
           </UFileUpload>
+
+          <div class="flex items-center justify-between mt-6 mb-3">
+            <span class="text-sm font-medium">{{ t('courses.quizzes.title') }}</span>
+            <UButton
+              size="xs" variant="soft" icon="i-lucide-plus"
+              :label="t('courses.quizzes.create')" @click="openCreateQuiz(item.value as string)"
+            />
+          </div>
+
+          <p v-if="moduleById(item.value as string)!.quizzes.length === 0" class="text-sm text-muted">
+            {{ t('courses.quizzes.empty') }}
+          </p>
+
+          <ul v-else class="space-y-2">
+            <li
+              v-for="quiz in moduleById(item.value as string)!.quizzes" :key="quiz.id"
+              class="flex items-center justify-between text-sm border-b border-default pb-2"
+            >
+              <span>
+                {{ quiz.title }}
+                <UBadge :color="quiz.isRequiredForCompletion ? 'primary' : 'neutral'" variant="subtle" size="sm" class="ms-2">
+                  {{ quiz.isRequiredForCompletion ? t('courses.quizzes.required') : t('courses.quizzes.optional') }}
+                </UBadge>
+                <span class="text-muted ms-2">{{ t('courses.quizzes.passingScore') }}: {{ quiz.passingScorePercent }}%</span>
+              </span>
+              <div class="flex gap-2">
+                <UButton size="xs" variant="soft" :label="t('courses.quizzes.edit')" @click="openEditQuiz(quiz.id)" />
+                <UButton size="xs" variant="soft" color="error" :label="t('courses.quizzes.delete')" @click="deletingQuiz = quiz" />
+              </div>
+            </li>
+          </ul>
         </template>
       </template>
     </UAccordion>
@@ -578,6 +638,17 @@ function formatDate(value: string): string {
         <div class="flex justify-end gap-2 mt-6">
           <UButton variant="ghost" :label="t('common.cancel')" @click="removingEnrollment = null" />
           <UButton color="error" :label="t('common.confirm')" @click="confirmRemoveEnrollment" />
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Delete quiz -->
+    <UModal v-model:open="isDeleteQuizOpen" :title="t('courses.quizzes.confirmDeleteTitle')">
+      <template #body>
+        <p>{{ t('courses.quizzes.confirmDeleteBody') }}</p>
+        <div class="flex justify-end gap-2 mt-6">
+          <UButton variant="ghost" :label="t('common.cancel')" @click="deletingQuiz = null" />
+          <UButton color="error" :label="t('common.confirm')" @click="confirmDeleteQuiz" />
         </div>
       </template>
     </UModal>

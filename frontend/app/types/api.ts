@@ -79,12 +79,21 @@ export interface DocumentSummary {
   uploadedAtUtc: string
 }
 
+export interface QuizSummary {
+  id: string
+  moduleId: string
+  title: string
+  passingScorePercent: number
+  isRequiredForCompletion: boolean
+}
+
 export interface ModuleDetails {
   id: string
   courseId: string
   title: string
   order: number
   documents: DocumentSummary[]
+  quizzes: QuizSummary[]
 }
 
 export interface CourseDetails {
@@ -170,4 +179,79 @@ export interface CertificateDetails {
   recipientFullName: string
   certificateNumber: string
   issuedAtUtc: string
+}
+
+// --- Quizzes ---
+// Single-choice only for now (REQ-QUIZ-01) — no question-type field on the frontend yet,
+// mirroring the backend's decision not to expose QuestionType until multi-choice actually ships.
+
+export interface ChoiceInput {
+  text: string
+  isCorrect: boolean
+  order: number
+}
+
+export interface QuestionInput {
+  text: string
+  order: number
+  choices: ChoiceInput[]
+}
+
+export interface ChoiceManagementDetails {
+  id: string
+  text: string
+  isCorrect: boolean
+  order: number
+}
+
+export interface QuestionManagementDetails {
+  id: string
+  text: string
+  order: number
+  choices: ChoiceManagementDetails[]
+}
+
+export interface QuizManagementDetails {
+  id: string
+  moduleId: string
+  title: string
+  passingScorePercent: number
+  isRequiredForCompletion: boolean
+  questions: QuestionManagementDetails[]
+}
+
+export interface ChoiceAttemptView {
+  id: string
+  text: string
+  order: number
+}
+
+export interface QuestionAttemptView {
+  id: string
+  text: string
+  order: number
+  choices: ChoiceAttemptView[]
+}
+
+export interface QuizAttemptView {
+  id: string
+  moduleId: string
+  title: string
+  passingScorePercent: number
+  questions: QuestionAttemptView[]
+  hasPassed: boolean
+  bestScorePercent: number | null
+}
+
+export interface AnswerInput {
+  questionId: string
+  selectedChoiceId: string
+}
+
+export interface QuizAttemptResult {
+  scorePercent: number
+  passed: boolean
+  courseCompleted: boolean
+  certificateIssued: boolean
+  certificateId: string | null
 }

@@ -24,4 +24,9 @@ public static class ActivityActions
 
     public const string UsersEnrolled = "UsersEnrolled";
     public const string UserUnenrolled = "UserUnenrolled";
+
+    public const string QuizCreated = "QuizCreated";
+    public const string QuizUpdated = "QuizUpdated";
+    public const string QuizDeleted = "QuizDeleted";
+    public const string QuizAttemptSubmitted = "QuizAttemptSubmitted";
 }

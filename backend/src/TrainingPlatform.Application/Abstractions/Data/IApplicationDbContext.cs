@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TrainingPlatform.Domain.Certificates;
 using TrainingPlatform.Domain.Content;
 using TrainingPlatform.Domain.Enrollments;
+using TrainingPlatform.Domain.Quizzes;
 
 namespace TrainingPlatform.Application.Abstractions.Data;
 
@@ -23,6 +24,16 @@ public interface IApplicationDbContext
     DbSet<Progress> Progresses { get; }
 
     DbSet<Certificate> Certificates { get; }
+
+    DbSet<Quiz> Quizzes { get; }
+
+    DbSet<Question> Questions { get; }
+
+    DbSet<QuestionChoice> QuestionChoices { get; }
+
+    DbSet<QuizAttempt> QuizAttempts { get; }
+
+    DbSet<QuizAttemptAnswer> QuizAttemptAnswers { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

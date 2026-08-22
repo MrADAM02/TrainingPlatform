@@ -6,6 +6,7 @@ using TrainingPlatform.Domain.Activity;
 using TrainingPlatform.Domain.Certificates;
 using TrainingPlatform.Domain.Content;
 using TrainingPlatform.Domain.Enrollments;
+using TrainingPlatform.Domain.Quizzes;
 using TrainingPlatform.Infrastructure.Identity;
 
 namespace TrainingPlatform.Infrastructure.Database;
@@ -28,6 +29,16 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Progress> Progresses => Set<Progress>();
 
     public DbSet<Certificate> Certificates => Set<Certificate>();
+
+    public DbSet<Quiz> Quizzes => Set<Quiz>();
+
+    public DbSet<Question> Questions => Set<Question>();
+
+    public DbSet<QuestionChoice> QuestionChoices => Set<QuestionChoice>();
+
+    public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
+
+    public DbSet<QuizAttemptAnswer> QuizAttemptAnswers => Set<QuizAttemptAnswer>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -155,6 +166,71 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
             // Deliberately no FK to users/courses, same reasoning as ActivityLog: a certificate
             // is a permanent achievement record and must survive deletion of either.
+        });
+
+        builder.Entity<Quiz>(entity =>
+        {
+            entity.ToTable("quizzes");
+            entity.HasKey(q => q.Id);
+            entity.Property(q => q.Title).IsRequired().HasMaxLength(200);
+            entity.HasIndex(q => q.ModuleId);
+            entity.HasOne<Module>()
+                .WithMany()
+                .HasForeignKey(q => q.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Question>(entity =>
+        {
+            entity.ToTable("questions");
+            entity.HasKey(q => q.Id);
+            entity.Property(q => q.Text).IsRequired().HasMaxLength(1000);
+            entity.HasIndex(q => q.QuizId);
+            entity.HasOne<Quiz>()
+                .WithMany()
+                .HasForeignKey(q => q.QuizId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<QuestionChoice>(entity =>
+        {
+            entity.ToTable("question_choices");
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.Text).IsRequired().HasMaxLength(500);
+            entity.HasIndex(c => c.QuestionId);
+            entity.HasOne<Question>()
+                .WithMany()
+                .HasForeignKey(c => c.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<QuizAttempt>(entity =>
+        {
+            entity.ToTable("quiz_attempts");
+            entity.HasKey(a => a.Id);
+            entity.HasIndex(a => new { a.QuizId, a.UserId });
+            entity.HasOne<Quiz>()
+                .WithMany()
+                .HasForeignKey(a => a.QuizId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Deliberately no FK to users, same reasoning as ActivityLog/Certificate: attempt
+            // history is a permanent record and must survive account deletion.
+        });
+
+        builder.Entity<QuizAttemptAnswer>(entity =>
+        {
+            entity.ToTable("quiz_attempt_answers");
+            entity.HasKey(a => a.Id);
+            entity.HasIndex(a => a.QuizAttemptId);
+            entity.HasOne<QuizAttempt>()
+                .WithMany()
+                .HasForeignKey(a => a.QuizAttemptId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // QuestionId/SelectedChoiceId deliberately have no FK: they snapshot what was
+            // actually selected at attempt time, so editing or deleting a question/choice later
+            // never corrupts or cascades into a trainee's already-recorded answer.
         });
     }
 }

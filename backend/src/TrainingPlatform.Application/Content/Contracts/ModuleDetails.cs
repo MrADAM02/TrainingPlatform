@@ -1,3 +1,5 @@
+using TrainingPlatform.Application.Quizzes.Contracts;
+
 namespace TrainingPlatform.Application.Content.Contracts;
 
 public sealed record ModuleDetails(
@@ -5,4 +7,5 @@ public sealed record ModuleDetails(
     Guid CourseId,
     string Title,
     int Order,
-    IReadOnlyList<DocumentSummary> Documents);
+    IReadOnlyList<DocumentSummary> Documents,
+    IReadOnlyList<QuizSummary> Quizzes);

@@ -5,7 +5,6 @@ using TrainingPlatform.Application.Abstractions.Data;
 using TrainingPlatform.Application.Abstractions.Messaging;
 using TrainingPlatform.Application.Abstractions.Storage;
 using TrainingPlatform.Domain.Activity;
-using TrainingPlatform.Domain.Certificates;
 using TrainingPlatform.Domain.Common;
 using TrainingPlatform.Domain.Content;
 using TrainingPlatform.Domain.Enrollments;
@@ -74,39 +73,8 @@ public sealed class GetDocumentDownloadUrlQueryHandler(
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        if (enrollment.Status == EnrollmentStatus.Active)
-        {
-            var moduleIds = await dbContext.Modules
-                .Where(m => m.CourseId == course.Id)
-                .Select(m => m.Id)
-                .ToListAsync(cancellationToken);
-
-            var totalDocuments = await dbContext.Documents
-                .CountAsync(d => moduleIds.Contains(d.ModuleId), cancellationToken);
-
-            var completedDocuments = await dbContext.Progresses
-                .CountAsync(p => p.EnrollmentId == enrollment.Id, cancellationToken);
-
-            if (totalDocuments > 0 && completedDocuments >= totalDocuments)
-            {
-                enrollment.MarkCompleted();
-                await IssueCertificateIfNotAlreadyIssuedAsync(course, cancellationToken);
-                await dbContext.SaveChangesAsync(cancellationToken);
-            }
-        }
-    }
-
-    private async Task IssueCertificateIfNotAlreadyIssuedAsync(Course course, CancellationToken cancellationToken)
-    {
-        var alreadyIssued = await dbContext.Certificates
-            .AnyAsync(c => c.UserId == currentUser.UserId && c.CourseId == course.Id, cancellationToken);
-
-        if (alreadyIssued)
-        {
-            return;
-        }
-
-        dbContext.Certificates.Add(
-            Certificate.Create(currentUser.UserId, course.Id, course.Title, currentUser.FullName));
+        await CourseCompletionService.CompleteAndIssueCertificateIfEligibleAsync(
+            course, enrollment, currentUser.FullName, dbContext, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

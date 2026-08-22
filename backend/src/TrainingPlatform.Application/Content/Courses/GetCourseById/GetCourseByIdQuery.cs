@@ -3,6 +3,7 @@ using TrainingPlatform.Application.Abstractions.Authentication;
 using TrainingPlatform.Application.Abstractions.Data;
 using TrainingPlatform.Application.Abstractions.Messaging;
 using TrainingPlatform.Application.Content.Contracts;
+using TrainingPlatform.Application.Quizzes.Contracts;
 using TrainingPlatform.Domain.Common;
 using TrainingPlatform.Domain.Content;
 
@@ -43,6 +44,10 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
             .Where(d => moduleIds.Contains(d.ModuleId))
             .ToListAsync(cancellationToken);
 
+        var quizzes = await dbContext.Quizzes.AsNoTracking()
+            .Where(q => moduleIds.Contains(q.ModuleId))
+            .ToListAsync(cancellationToken);
+
         var moduleDetails = modules
             .Select(m => new ModuleDetails(
                 m.Id,
@@ -52,6 +57,10 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
                 documents
                     .Where(d => d.ModuleId == m.Id)
                     .Select(d => new DocumentSummary(d.Id, d.ModuleId, d.Title, d.FileType, d.ContentType, d.SizeBytes, d.Version, d.UploadedAtUtc))
+                    .ToList(),
+                quizzes
+                    .Where(q => q.ModuleId == m.Id)
+                    .Select(q => new QuizSummary(q.Id, q.ModuleId, q.Title, q.PassingScorePercent, q.IsRequiredForCompletion))
                     .ToList()))
             .ToList();
 

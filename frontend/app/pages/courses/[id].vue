@@ -139,6 +139,29 @@ async function downloadDocument(doc: DocumentSummary) {
               <p v-else class="text-sm text-muted">
                 {{ t('courses.documents.empty') }}
               </p>
+
+              <template v-if="moduleById(item.value as string)!.quizzes.length > 0">
+                <p class="text-sm font-medium mt-4 mb-2">
+                  {{ t('courses.quizzes.title') }}
+                </p>
+                <ul class="space-y-2">
+                  <li
+                    v-for="quiz in moduleById(item.value as string)!.quizzes" :key="quiz.id"
+                    class="flex items-center justify-between text-sm"
+                  >
+                    <span>
+                      {{ quiz.title }}
+                      <UBadge v-if="quiz.isRequiredForCompletion" color="primary" variant="subtle" size="sm" class="ms-2">
+                        {{ t('courses.quizzes.required') }}
+                      </UBadge>
+                    </span>
+                    <UButton
+                      size="xs" variant="soft" icon="i-lucide-list-checks"
+                      :label="t('courses.quizzes.startQuiz')" :to="`/quizzes/${quiz.id}`"
+                    />
+                  </li>
+                </ul>
+              </template>
             </template>
           </template>
         </UAccordion>
