@@ -190,7 +190,10 @@
       "version": "Version {number}",
       "uploadedBy": "Uploaded by {name}",
       "unknownUploader": "Unknown uploader",
-      "close": "Close"
+      "close": "Close",
+      "watch": "Watch",
+      "watchError": "Couldn't load video.",
+      "retry": "Retry"
     },
     "enrollments": {
       "title": "Enrolled Trainees",

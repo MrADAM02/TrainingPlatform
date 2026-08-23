@@ -9,7 +9,10 @@ public sealed class S3FileStorageService(IAmazonS3 s3Client, IOptions<StorageOpt
 {
     private readonly StorageOptions _options = options.Value;
     private static readonly TimeSpan UploadUrlLifetime = TimeSpan.FromMinutes(15);
-    private static readonly TimeSpan DownloadUrlLifetime = TimeSpan.FromMinutes(10);
+    // Long enough to cover a full video-watching session (including pauses/seeks, which each
+    // re-validate the signature against Expires) without being unbounded — presigned URLs are
+    // unauthenticated bearer capabilities once issued.
+    private static readonly TimeSpan DownloadUrlLifetime = TimeSpan.FromHours(1);
 
     // GetPreSignedUrlRequest.Protocol controls the generated URL's scheme independently of the
     // client's UseHttp setting — without this it's always signed as https://, which breaks

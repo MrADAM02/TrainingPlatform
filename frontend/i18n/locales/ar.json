@@ -190,7 +190,10 @@
       "version": "الإصدار {number}",
       "uploadedBy": "رفعه {name}",
       "unknownUploader": "رافع غير معروف",
-      "close": "إغلاق"
+      "close": "إغلاق",
+      "watch": "مشاهدة",
+      "watchError": "تعذر تحميل الفيديو.",
+      "retry": "إعادة المحاولة"
     },
     "enrollments": {
       "title": "المتدربون المسجلون",

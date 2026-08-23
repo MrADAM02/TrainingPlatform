@@ -184,6 +184,11 @@ async function confirmDeleteModule() {
 
 // --- Documents ---
 const uploadingModuleId = ref<string | null>(null)
+const openVideoDocId = ref<string | null>(null)
+
+function toggleVideo(documentId: string) {
+  openVideoDocId.value = openVideoDocId.value === documentId ? null : documentId
+}
 
 async function handleFileSelected(moduleId: string, file: File | File[] | null | undefined) {
   if (!file || Array.isArray(file)) return
@@ -500,12 +505,22 @@ function formatDate(value: string): string {
                 <UBadge v-if="row.original.version > 1" variant="subtle" color="neutral" size="sm" class="ms-1">
                   {{ t('courses.documents.version', { number: row.original.version }) }}
                 </UBadge>
+                <DocumentVideoPlayer
+                  v-if="openVideoDocId === row.original.id" :document-id="row.original.id"
+                  class="mt-2 max-w-md"
+                />
               </template>
               <template #sizeBytes-cell="{ row }">
                 {{ formatBytes(row.original.sizeBytes) }}
               </template>
               <template #actions-cell="{ row }">
                 <div class="flex justify-end gap-2">
+                  <UButton
+                    v-if="row.original.fileType === 1" size="xs" variant="soft"
+                    :icon="openVideoDocId === row.original.id ? 'i-lucide-x' : 'i-lucide-play'"
+                    :label="openVideoDocId === row.original.id ? t('courses.documents.close') : t('courses.documents.watch')"
+                    @click="toggleVideo(row.original.id)"
+                  />
                   <UButton size="xs" variant="soft" :label="t('courses.documents.download')" @click="downloadDocument(row.original)" />
                   <UButton size="xs" variant="soft" :label="t('courses.documents.history')" @click="openVersionHistory(row.original)" />
                   <UFileUpload

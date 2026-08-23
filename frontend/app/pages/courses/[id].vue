@@ -11,6 +11,11 @@ const router = useRouter()
 
 const courseId = route.params.id as string
 const course = ref<CourseDetails | null>(null)
+const openVideoDocId = ref<string | null>(null)
+
+function toggleVideo(documentId: string) {
+  openVideoDocId.value = openVideoDocId.value === documentId ? null : documentId
+}
 
 try {
   course.value = await request<CourseDetails>(`/courses/${courseId}`)
@@ -119,21 +124,29 @@ async function downloadDocument(doc: DocumentSummary) {
           <template #body="{ item }">
             <template v-if="moduleById(item.value as string)">
               <ul v-if="moduleById(item.value as string)!.documents.length > 0" class="space-y-2">
-                <li
-                  v-for="doc in moduleById(item.value as string)!.documents" :key="doc.id"
-                  class="flex items-center justify-between text-sm"
-                >
-                  <span>
-                    {{ doc.title }}
-                    <UBadge variant="subtle" size="sm" class="ms-2">
-                      {{ documentTypeLabels[doc.fileType] }}
-                    </UBadge>
-                    <span class="text-muted ms-2">{{ formatBytes(doc.sizeBytes) }}</span>
-                  </span>
-                  <UButton
-                    size="xs" variant="soft" :disabled="!course.canDownload"
-                    :label="t('courses.documents.download')" @click="downloadDocument(doc)"
-                  />
+                <li v-for="doc in moduleById(item.value as string)!.documents" :key="doc.id" class="text-sm">
+                  <div class="flex items-center justify-between">
+                    <span>
+                      {{ doc.title }}
+                      <UBadge variant="subtle" size="sm" class="ms-2">
+                        {{ documentTypeLabels[doc.fileType] }}
+                      </UBadge>
+                      <span class="text-muted ms-2">{{ formatBytes(doc.sizeBytes) }}</span>
+                    </span>
+                    <div class="flex items-center gap-2">
+                      <UButton
+                        v-if="doc.fileType === 1" size="xs" variant="soft" :disabled="!course.canDownload"
+                        :icon="openVideoDocId === doc.id ? 'i-lucide-x' : 'i-lucide-play'"
+                        :label="openVideoDocId === doc.id ? t('courses.documents.close') : t('courses.documents.watch')"
+                        @click="toggleVideo(doc.id)"
+                      />
+                      <UButton
+                        size="xs" variant="soft" :disabled="!course.canDownload"
+                        :label="t('courses.documents.download')" @click="downloadDocument(doc)"
+                      />
+                    </div>
+                  </div>
+                  <DocumentVideoPlayer v-if="openVideoDocId === doc.id" :document-id="doc.id" class="mt-2" />
                 </li>
               </ul>
               <p v-else class="text-sm text-muted">
