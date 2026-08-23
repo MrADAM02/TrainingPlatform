@@ -64,7 +64,8 @@ public sealed class RequestDocumentUploadCommandHandler(
         var documentId = Guid.NewGuid();
         var storageKey = $"courses/{course.Id}/modules/{module.Id}/{documentId}/{SanitizeFileName(command.FileName)}";
 
-        var document = Document.Create(module.Id, command.Title, fileType, command.ContentType, storageKey, command.SizeBytes);
+        var document = Document.Create(
+            module.Id, command.Title, fileType, command.ContentType, storageKey, command.SizeBytes, currentUser.UserId);
         dbContext.Documents.Add(document);
         await dbContext.SaveChangesAsync(cancellationToken);
 

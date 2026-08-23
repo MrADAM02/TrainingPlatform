@@ -179,7 +179,18 @@
       "confirmDeleteBody": "سيتم حذف الملف نهائياً. لا يمكن التراجع عن هذا الإجراء.",
       "uploadSuccess": "تم رفع المستند.",
       "uploadError": "فشل الرفع.",
-      "deleteSuccess": "تم حذف المستند."
+      "deleteSuccess": "تم حذف المستند.",
+      "replace": "استبدال",
+      "replacing": "جاري الاستبدال...",
+      "replaceSuccess": "تم استبدال المستند.",
+      "replaceError": "فشل الاستبدال.",
+      "history": "السجل",
+      "versionHistory": "سجل الإصدارات",
+      "current": "الحالي",
+      "version": "الإصدار {number}",
+      "uploadedBy": "رفعه {name}",
+      "unknownUploader": "رافع غير معروف",
+      "close": "إغلاق"
     },
     "enrollments": {
       "title": "المتدربون المسجلون",

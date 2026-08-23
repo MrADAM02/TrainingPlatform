@@ -19,6 +19,8 @@ public interface IApplicationDbContext
 
     DbSet<Document> Documents { get; }
 
+    DbSet<DocumentVersion> DocumentVersions { get; }
+
     DbSet<Enrollment> Enrollments { get; }
 
     DbSet<Progress> Progresses { get; }

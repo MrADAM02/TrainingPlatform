@@ -21,6 +21,11 @@ public sealed class Document
 
     public DateTime UploadedAtUtc { get; private set; }
 
+    /// <summary>No FK — <c>ApplicationUser</c> lives in Infrastructure, which Domain must not
+    /// depend on. Nullable because documents created before this field existed have no recorded
+    /// uploader.</summary>
+    public Guid? UploadedByUserId { get; private set; }
+
     private Document()
     {
     }
@@ -31,7 +36,8 @@ public sealed class Document
         DocumentType fileType,
         string contentType,
         string storageKey,
-        long sizeBytes)
+        long sizeBytes,
+        Guid? uploadedByUserId)
     {
         return new Document
         {
@@ -44,7 +50,23 @@ public sealed class Document
             SizeBytes = sizeBytes,
             Version = 1,
             UploadedAtUtc = DateTime.UtcNow,
+            UploadedByUserId = uploadedByUserId,
         };
+    }
+
+    /// <summary>Replaces the current file with a new one (REQ-CONT-06), bumping <see
+    /// cref="Version"/>. The caller is responsible for archiving the pre-replacement state as a
+    /// <see cref="DocumentVersion"/> before calling this, since this method only knows the new
+    /// state.</summary>
+    public void ReplaceFile(DocumentType fileType, string contentType, string storageKey, long sizeBytes, Guid? uploadedByUserId)
+    {
+        FileType = fileType;
+        ContentType = contentType;
+        StorageKey = storageKey;
+        SizeBytes = sizeBytes;
+        Version += 1;
+        UploadedAtUtc = DateTime.UtcNow;
+        UploadedByUserId = uploadedByUserId;
     }
 
     public static DocumentType InferFileType(string contentType)

@@ -24,6 +24,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
     public DbSet<Document> Documents => Set<Document>();
 
+    public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
+
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
 
     public DbSet<Progress> Progresses => Set<Progress>();
@@ -122,6 +124,23 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
                 .WithMany()
                 .HasForeignKey(d => d.ModuleId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // UploadedByUserId deliberately has no FK — same reasoning as Course.TrainerId.
+        });
+
+        builder.Entity<DocumentVersion>(entity =>
+        {
+            entity.ToTable("document_versions");
+            entity.HasKey(v => v.Id);
+            entity.Property(v => v.ContentType).IsRequired().HasMaxLength(200);
+            entity.Property(v => v.StorageKey).IsRequired().HasMaxLength(1000);
+            entity.HasIndex(v => v.DocumentId);
+            entity.HasOne<Document>()
+                .WithMany()
+                .HasForeignKey(v => v.DocumentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // UploadedByUserId deliberately has no FK, same reasoning as Document's own field.
         });
 
         builder.Entity<Enrollment>(entity =>

@@ -45,6 +45,16 @@ public sealed class DeleteDocumentCommandHandler(
             return Result.Failure(ContentErrors.NotCourseOwner);
         }
 
+        var archivedVersions = await dbContext.DocumentVersions.AsNoTracking()
+            .Where(v => v.DocumentId == document.Id)
+            .Select(v => v.StorageKey)
+            .ToListAsync(cancellationToken);
+
+        foreach (var storageKey in archivedVersions)
+        {
+            await fileStorage.DeleteAsync(storageKey, cancellationToken);
+        }
+
         await fileStorage.DeleteAsync(document.StorageKey, cancellationToken);
 
         dbContext.Documents.Remove(document);

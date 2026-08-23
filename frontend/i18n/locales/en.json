@@ -179,7 +179,18 @@
       "confirmDeleteBody": "This permanently removes the file. This cannot be undone.",
       "uploadSuccess": "Document uploaded.",
       "uploadError": "Upload failed.",
-      "deleteSuccess": "Document deleted."
+      "deleteSuccess": "Document deleted.",
+      "replace": "Replace",
+      "replacing": "Replacing...",
+      "replaceSuccess": "Document replaced.",
+      "replaceError": "Replace failed.",
+      "history": "History",
+      "versionHistory": "Version history",
+      "current": "Current",
+      "version": "Version {number}",
+      "uploadedBy": "Uploaded by {name}",
+      "unknownUploader": "Unknown uploader",
+      "close": "Close"
     },
     "enrollments": {
       "title": "Enrolled Trainees",

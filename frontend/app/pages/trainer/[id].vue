@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AccordionItem, FormError, FormSubmitEvent, TableColumn } from '@nuxt/ui'
-import type { CourseDetails, DocumentSummary, EnrollmentSummary, ModuleDetails, ProblemDetails, QuizSummary, UploadTicket, UserSummary } from '~/types/api'
+import type { CourseDetails, DocumentSummary, DocumentVersionItem, EnrollmentSummary, ModuleDetails, ProblemDetails, QuizSummary, UploadTicket, UserSummary } from '~/types/api'
 import { documentTypeLabels } from '~/types/api'
 
 const { t, locale } = useI18n()
@@ -226,6 +226,70 @@ async function downloadDocument(doc: DocumentSummary) {
   }
 }
 
+const replacingDocumentId = ref<string | null>(null)
+
+async function handleReplaceFileSelected(doc: DocumentSummary, file: File | File[] | null | undefined) {
+  if (!file || Array.isArray(file)) return
+
+  replacingDocumentId.value = doc.id
+  try {
+    const contentType = file.type || 'application/octet-stream'
+    const ticket = await request<UploadTicket>(`/documents/${doc.id}/replace-url`, {
+      method: 'POST',
+      body: { fileName: file.name, contentType, sizeBytes: file.size },
+    })
+
+    // Same direct-to-storage upload as the initial-upload flow — must NOT go through useApi().
+    await $fetch(ticket.uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': contentType },
+    })
+
+    toast.add({ title: t('courses.documents.replaceSuccess'), color: 'success' })
+    await fetchCourse()
+  }
+  catch {
+    toast.add({ title: t('courses.documents.replaceError'), color: 'error' })
+  }
+  finally {
+    replacingDocumentId.value = null
+  }
+}
+
+const viewingVersionsDocument = ref<DocumentSummary | null>(null)
+const versions = ref<DocumentVersionItem[]>([])
+const loadingVersions = ref(false)
+const isVersionsOpen = computed({
+  get: () => viewingVersionsDocument.value !== null,
+  set: (value: boolean) => { if (!value) viewingVersionsDocument.value = null },
+})
+
+async function openVersionHistory(doc: DocumentSummary) {
+  viewingVersionsDocument.value = doc
+  loadingVersions.value = true
+  try {
+    versions.value = await request<DocumentVersionItem[]>(`/documents/${doc.id}/versions`)
+  }
+  catch (error) {
+    toast.add({ title: errorDetail(error, t('common.error')), color: 'error' })
+  }
+  finally {
+    loadingVersions.value = false
+  }
+}
+
+async function downloadVersion(version: DocumentVersionItem) {
+  if (!version.versionId) return
+  try {
+    const result = await request<{ url: string }>(`/document-versions/${version.versionId}/download-url`)
+    window.open(result.url, '_blank')
+  }
+  catch (error) {
+    toast.add({ title: errorDetail(error, t('common.error')), color: 'error' })
+  }
+}
+
 const deletingDocument = ref<DocumentSummary | null>(null)
 const isDeleteDocumentOpen = computed({
   get: () => deletingDocument.value !== null,
@@ -433,6 +497,9 @@ function formatDate(value: string): string {
                 <UBadge variant="subtle" size="sm" class="ms-2">
                   {{ documentTypeLabels[row.original.fileType] }}
                 </UBadge>
+                <UBadge v-if="row.original.version > 1" variant="subtle" color="neutral" size="sm" class="ms-1">
+                  {{ t('courses.documents.version', { number: row.original.version }) }}
+                </UBadge>
               </template>
               <template #sizeBytes-cell="{ row }">
                 {{ formatBytes(row.original.sizeBytes) }}
@@ -440,6 +507,21 @@ function formatDate(value: string): string {
               <template #actions-cell="{ row }">
                 <div class="flex justify-end gap-2">
                   <UButton size="xs" variant="soft" :label="t('courses.documents.download')" @click="downloadDocument(row.original)" />
+                  <UButton size="xs" variant="soft" :label="t('courses.documents.history')" @click="openVersionHistory(row.original)" />
+                  <UFileUpload
+                    :model-value="null"
+                    :disabled="replacingDocumentId === row.original.id"
+                    @update:model-value="(file) => handleReplaceFileSelected(row.original, file)"
+                  >
+                    <template #default="{ open }">
+                      <UButton
+                        size="xs" variant="soft"
+                        :loading="replacingDocumentId === row.original.id"
+                        :label="replacingDocumentId === row.original.id ? t('courses.documents.replacing') : t('courses.documents.replace')"
+                        @click="() => open()"
+                      />
+                    </template>
+                  </UFileUpload>
                   <UButton size="xs" variant="soft" color="error" :label="t('courses.documents.delete')" @click="deletingDocument = row.original" />
                 </div>
               </template>
@@ -596,6 +678,44 @@ function formatDate(value: string): string {
         <div class="flex justify-end gap-2 mt-6">
           <UButton variant="ghost" :label="t('common.cancel')" @click="deletingDocument = null" />
           <UButton color="error" :label="t('common.confirm')" @click="confirmDeleteDocument" />
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Document version history -->
+    <UModal v-model:open="isVersionsOpen" :title="t('courses.documents.versionHistory')">
+      <template #body>
+        <ul class="space-y-3">
+          <li
+            v-for="v in versions" :key="v.versionId ?? 'current'"
+            class="flex items-center justify-between gap-3 text-sm border-b border-default pb-3 last:border-0 last:pb-0"
+          >
+            <div>
+              <span class="font-medium">{{ t('courses.documents.version', { number: v.version }) }}</span>
+              <UBadge v-if="v.isCurrent" color="primary" variant="subtle" size="sm" class="ms-2">
+                {{ t('courses.documents.current') }}
+              </UBadge>
+              <p class="text-muted mt-1">
+                {{ formatBytes(v.sizeBytes) }} · {{ new Date(v.uploadedAtUtc).toLocaleString() }}
+              </p>
+              <p class="text-muted">
+                {{ v.uploadedByFullName ? t('courses.documents.uploadedBy', { name: v.uploadedByFullName }) : t('courses.documents.unknownUploader') }}
+              </p>
+            </div>
+            <UButton
+              size="xs" variant="soft" icon="i-lucide-download"
+              :label="t('courses.documents.download')"
+              @click="v.isCurrent ? downloadDocument(viewingVersionsDocument!) : downloadVersion(v)"
+            />
+          </li>
+        </ul>
+
+        <p v-if="!loadingVersions && versions.length === 0" class="text-muted text-sm">
+          {{ t('courses.documents.empty') }}
+        </p>
+
+        <div class="flex justify-end mt-6">
+          <UButton variant="ghost" :label="t('courses.documents.close')" @click="isVersionsOpen = false" />
         </div>
       </template>
     </UModal>

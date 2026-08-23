@@ -1,6 +1,9 @@
 using TrainingPlatform.Application.Abstractions.Messaging;
 using TrainingPlatform.Application.Content.Documents.DeleteDocument;
 using TrainingPlatform.Application.Content.Documents.GetDocumentDownloadUrl;
+using TrainingPlatform.Application.Content.Documents.GetDocumentVersionDownloadUrl;
+using TrainingPlatform.Application.Content.Documents.GetDocumentVersions;
+using TrainingPlatform.Application.Content.Documents.ReplaceDocumentFile;
 using TrainingPlatform.Application.Content.Documents.RequestDocumentUpload;
 
 namespace TrainingPlatform.Api.Endpoints.Documents;
@@ -37,8 +40,35 @@ public static class DocumentEndpoints
         })
         .RequireAuthorization("RequireTrainerOrAdministrator");
 
+        var versions = app.MapGroup("/api/v1/documents").WithTags("Documents").RequireAuthorization("RequireTrainerOrAdministrator");
+
+        versions.MapPost("/{id:guid}/replace-url", async (Guid id, ReplaceUploadRequest request, ISender sender, CancellationToken ct) =>
+        {
+            var command = new ReplaceDocumentFileCommand(id, request.FileName, request.ContentType, request.SizeBytes);
+            var result = await sender.Send(command, ct);
+            return result.IsSuccess ? Results.Ok(result.Value) : CustomResults.Problem(result);
+        });
+
+        versions.MapGet("/{id:guid}/versions", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetDocumentVersionsQuery(id), ct);
+            return result.IsSuccess ? Results.Ok(result.Value) : CustomResults.Problem(result);
+        });
+
+        var documentVersions = app.MapGroup("/api/v1/document-versions")
+            .WithTags("Documents")
+            .RequireAuthorization("RequireTrainerOrAdministrator");
+
+        documentVersions.MapGet("/{id:guid}/download-url", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetDocumentVersionDownloadUrlQuery(id), ct);
+            return result.IsSuccess ? Results.Ok(new { url = result.Value }) : CustomResults.Problem(result);
+        });
+
         return app;
     }
 }
 
 public sealed record RequestUploadRequest(string Title, string FileName, string ContentType, long SizeBytes);
+
+public sealed record ReplaceUploadRequest(string FileName, string ContentType, long SizeBytes);

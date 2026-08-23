@@ -275,6 +275,16 @@ export interface CourseCompletionReportItem {
   avgCompletionDays: number | null
 }
 
+export interface DocumentVersionItem {
+  versionId: string | null
+  version: number
+  isCurrent: boolean
+  sizeBytes: number
+  uploadedAtUtc: string
+  uploadedByEmail: string | null
+  uploadedByFullName: string | null
+}
+
 export interface TraineeProgressReportItem {
   userId: string
   userEmail: string

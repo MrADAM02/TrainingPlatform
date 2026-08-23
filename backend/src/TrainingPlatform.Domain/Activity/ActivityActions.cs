@@ -19,6 +19,7 @@ public static class ActivityActions
     public const string ModuleUpdated = "ModuleUpdated";
     public const string ModuleDeleted = "ModuleDeleted";
     public const string DocumentUploadRequested = "DocumentUploadRequested";
+    public const string DocumentReplaced = "DocumentReplaced";
     public const string DocumentDeleted = "DocumentDeleted";
     public const string DocumentDownloaded = "DocumentDownloaded";
 
