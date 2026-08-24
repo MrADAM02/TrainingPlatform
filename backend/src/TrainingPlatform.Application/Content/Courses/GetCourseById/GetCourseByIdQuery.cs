@@ -29,9 +29,18 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
             return Result.Failure<CourseDetails>(ContentErrors.CourseNotAccessible);
         }
 
-        var isEnrolled = await dbContext.Enrollments
-            .AnyAsync(e => e.CourseId == course.Id && e.UserId == currentUser.UserId, cancellationToken);
+        var enrollment = await dbContext.Enrollments
+            .SingleOrDefaultAsync(e => e.CourseId == course.Id && e.UserId == currentUser.UserId, cancellationToken);
+        var isEnrolled = enrollment is not null;
         var canDownload = CourseAccess.CanManage(course, currentUser) || isEnrolled;
+
+        var completedDocumentIds = enrollment is null
+            ? []
+            : (await dbContext.Progresses.AsNoTracking()
+                .Where(p => p.EnrollmentId == enrollment.Id)
+                .Select(p => p.DocumentId)
+                .ToListAsync(cancellationToken))
+            .ToHashSet();
 
         var modules = await dbContext.Modules.AsNoTracking()
             .Where(m => m.CourseId == course.Id)
@@ -42,6 +51,7 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
 
         var documents = await dbContext.Documents.AsNoTracking()
             .Where(d => moduleIds.Contains(d.ModuleId))
+            .OrderBy(d => d.UploadedAtUtc)
             .ToListAsync(cancellationToken);
 
         var quizzes = await dbContext.Quizzes.AsNoTracking()
@@ -56,7 +66,9 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
                 m.Order,
                 documents
                     .Where(d => d.ModuleId == m.Id)
-                    .Select(d => new DocumentSummary(d.Id, d.ModuleId, d.Title, d.FileType, d.ContentType, d.SizeBytes, d.Version, d.UploadedAtUtc))
+                    .Select(d => new DocumentSummary(
+                        d.Id, d.ModuleId, d.Title, d.FileType, d.ContentType, d.SizeBytes, d.Version, d.UploadedAtUtc,
+                        d.TranscriptText, d.SummaryText, d.KeyTakeaway, d.DurationMinutes, completedDocumentIds.Contains(d.Id)))
                     .ToList(),
                 quizzes
                     .Where(q => q.ModuleId == m.Id)
@@ -64,8 +76,11 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
                     .ToList()))
             .ToList();
 
+        var isBookmarked = await dbContext.CourseBookmarks
+            .AnyAsync(b => b.UserId == currentUser.UserId && b.CourseId == course.Id, cancellationToken);
+
         return new CourseDetails(
             course.Id, course.Title, course.Description, course.TrainerId, course.IsPublished, course.CreatedAtUtc,
-            isEnrolled, canDownload, moduleDetails);
+            isEnrolled, canDownload, isBookmarked, moduleDetails);
     }
 }

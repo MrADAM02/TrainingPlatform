@@ -26,6 +26,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
     public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
 
+    public DbSet<CourseBookmark> CourseBookmarks => Set<CourseBookmark>();
+
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
 
     public DbSet<Progress> Progresses => Set<Progress>();
@@ -141,6 +143,21 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
                 .OnDelete(DeleteBehavior.Cascade);
 
             // UploadedByUserId deliberately has no FK, same reasoning as Document's own field.
+        });
+
+        builder.Entity<CourseBookmark>(entity =>
+        {
+            entity.ToTable("course_bookmarks");
+            entity.HasKey(b => b.Id);
+            entity.HasIndex(b => new { b.UserId, b.CourseId }).IsUnique();
+            entity.HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Course>()
+                .WithMany()
+                .HasForeignKey(b => b.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Enrollment>(entity =>

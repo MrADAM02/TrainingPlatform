@@ -4,6 +4,7 @@ import type { CourseSummary, PaginatedList } from '~/types/api'
 const { t } = useI18n()
 const { request } = useApi()
 const toast = useToast()
+const { toggleBookmark } = useBookmarks()
 
 const page = ref(1)
 const pageSize = 20
@@ -36,7 +37,8 @@ await fetchCourses()
       <CourseCard
         v-for="course in data?.items ?? []" :id="course.id" :key="course.id"
         :title="course.title" :description="course.description" :to="`/courses/${course.id}`"
-        :is-enrolled="course.isEnrolled"
+        :is-enrolled="course.isEnrolled" :is-bookmarked="course.isBookmarked"
+        @toggle-bookmark="toggleBookmark(course)"
       />
     </div>
 

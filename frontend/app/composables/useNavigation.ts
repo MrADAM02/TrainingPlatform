@@ -2,6 +2,7 @@ export interface AppNavItem {
   labelKey: string
   icon: string
   to: string
+  badge?: number
 }
 
 export interface AppNavGroups {
@@ -16,6 +17,7 @@ export interface AppNavGroups {
  */
 export function useNavigation(): ComputedRef<AppNavGroups> {
   const authStore = useAuthStore()
+  const { count: bookmarkCount } = useBookmarkCount()
 
   return computed(() => ({
     main: [
@@ -23,6 +25,7 @@ export function useNavigation(): ComputedRef<AppNavGroups> {
       { labelKey: 'nav.courses', icon: 'i-lucide-book-open', to: '/courses' },
       { labelKey: 'nav.search', icon: 'i-lucide-search', to: '/search' },
       { labelKey: 'nav.certificates', icon: 'i-lucide-award', to: '/certificates' },
+      { labelKey: 'nav.library', icon: 'i-lucide-bookmark', to: '/library', badge: bookmarkCount.value || undefined },
     ],
     trainer: authStore.hasRole('Trainer') || authStore.hasRole('Administrator')
       ? [

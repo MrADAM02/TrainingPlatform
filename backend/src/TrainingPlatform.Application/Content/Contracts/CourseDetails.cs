@@ -9,4 +9,5 @@ public sealed record CourseDetails(
     DateTime CreatedAtUtc,
     bool IsEnrolled,
     bool CanDownload,
+    bool IsBookmarked,
     IReadOnlyList<ModuleDetails> Modules);

@@ -63,6 +63,7 @@ export interface CourseSummary {
   isPublished: boolean
   createdAtUtc: string
   isEnrolled: boolean
+  isBookmarked: boolean
 }
 
 // Matches TrainingPlatform.Domain.Content.DocumentType's declaration order (serialized as int).
@@ -77,6 +78,11 @@ export interface DocumentSummary {
   sizeBytes: number
   version: number
   uploadedAtUtc: string
+  transcriptText: string | null
+  summaryText: string | null
+  keyTakeaway: string | null
+  durationMinutes: number | null
+  isCompleted: boolean
 }
 
 export interface QuizSummary {
@@ -105,6 +111,7 @@ export interface CourseDetails {
   createdAtUtc: string
   isEnrolled: boolean
   canDownload: boolean
+  isBookmarked: boolean
   modules: ModuleDetails[]
 }
 
@@ -273,6 +280,12 @@ export interface CourseCompletionReportItem {
   completedCount: number
   completionPercent: number
   avgCompletionDays: number | null
+}
+
+export interface LearningStreakSummary {
+  currentStreakDays: number
+  minutesThisMonth: number
+  itemsCompletedThisMonth: number
 }
 
 export interface DocumentVersionItem {

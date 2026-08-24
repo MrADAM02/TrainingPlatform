@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TrainingPlatform.Infrastructure.Database;
@@ -11,9 +12,11 @@ using TrainingPlatform.Infrastructure.Database;
 namespace TrainingPlatform.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260824202402_AddDocumentLessonDetails")]
+    partial class AddDocumentLessonDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -321,38 +324,6 @@ namespace TrainingPlatform.Infrastructure.Database.Migrations
                         .HasDatabaseName("ix_courses_trainer_id");
 
                     b.ToTable("courses", (string)null);
-                });
-
-            modelBuilder.Entity("TrainingPlatform.Domain.Content.CourseBookmark", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("course_id");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_course_bookmarks");
-
-                    b.HasIndex("CourseId")
-                        .HasDatabaseName("ix_course_bookmarks_course_id");
-
-                    b.HasIndex("UserId", "CourseId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_course_bookmarks_user_id_course_id");
-
-                    b.ToTable("course_bookmarks", (string)null);
                 });
 
             modelBuilder.Entity("TrainingPlatform.Domain.Content.Document", b =>
@@ -958,23 +929,6 @@ namespace TrainingPlatform.Infrastructure.Database.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_courses_users_trainer_id");
-                });
-
-            modelBuilder.Entity("TrainingPlatform.Domain.Content.CourseBookmark", b =>
-                {
-                    b.HasOne("TrainingPlatform.Domain.Content.Course", null)
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_course_bookmarks_courses_course_id");
-
-                    b.HasOne("TrainingPlatform.Infrastructure.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_course_bookmarks_users_user_id");
                 });
 
             modelBuilder.Entity("TrainingPlatform.Domain.Content.Document", b =>

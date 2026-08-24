@@ -21,6 +21,8 @@ public interface IApplicationDbContext
 
     DbSet<DocumentVersion> DocumentVersions { get; }
 
+    DbSet<CourseBookmark> CourseBookmarks { get; }
+
     DbSet<Enrollment> Enrollments { get; }
 
     DbSet<Progress> Progresses { get; }

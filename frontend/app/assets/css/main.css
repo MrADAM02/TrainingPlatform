@@ -1,2 +1,68 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* "Jabartah Learning House" palette (2026-08-24 redesign) — hand-approximated from reference
+   screenshots, not extracted precisely. Deep green (brand) is the primary/header/CTA-outline
+   color; gold (accent) is the highlight/CTA-fill color; sand is a warm cream-toned neutral
+   replacing the previous cool-gray 'slate', matching the reference's off-white page background.
+   Refine these exact stops during the Part 1 visual QA pass against the real screenshots. */
+/* `static` (not plain @theme) is required here: Tailwind v4 otherwise tree-shakes any theme color
+   shade that isn't referenced by a literal utility class its static scanner finds in source
+   files. Nuxt UI's dark-mode/semantic-token system (--ui-bg, --ui-text, --ui-border, etc.)
+   references these shades only through a *dynamically rendered* inline <style> tag that Tailwind
+   can't see at build time — so without `static`, only the handful of shades this file happens to
+   use directly (e.g. useCourseCover.ts's gradient strings) survived, and every other shade
+   silently resolved to nothing, breaking dark mode and several "soft"/elevated surfaces. */
+@theme static {
+  --color-brand-50: #edf3f1;
+  --color-brand-100: #d6e5e0;
+  --color-brand-200: #aecdc2;
+  --color-brand-300: #86b2a3;
+  --color-brand-400: #5e9887;
+  --color-brand-500: #3b7c6c;
+  --color-brand-600: #235e51;
+  --color-brand-700: #1b3f3a;
+  --color-brand-800: #142f2b;
+  --color-brand-900: #0e211e;
+  --color-brand-950: #081413;
+
+  --color-accent-50: #fbf5e9;
+  --color-accent-100: #f5e6c6;
+  --color-accent-200: #ebcd8d;
+  --color-accent-300: #e1b564;
+  --color-accent-400: #ddae53;
+  --color-accent-500: #d9a548;
+  --color-accent-600: #b9873a;
+  --color-accent-700: #96692d;
+  --color-accent-800: #6f4d22;
+  --color-accent-900: #4a3317;
+  --color-accent-950: #2a1c0d;
+
+  --color-sand-50: #faf7f0;
+  --color-sand-100: #f3eee1;
+  --color-sand-200: #e9e1cd;
+  --color-sand-300: #dcd0b4;
+  --color-sand-400: #c7b98f;
+  --color-sand-500: #ad9c6e;
+  --color-sand-600: #8c7e54;
+  --color-sand-700: #6c6140;
+  --color-sand-800: #4c452e;
+  --color-sand-900: #2e2a1c;
+  --color-sand-950: #1a170f;
+
+  --font-sans: 'Tajawal', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Nuxt UI hardcodes --ui-bg to #fff in light mode regardless of the chosen `neutral` palette —
+   every other --ui-bg-* variant (muted/elevated/accented) already derives from the neutral scale
+   correctly, only the base page background does not. Deliberately unlayered (not inside @theme,
+   which compiles into @layer theme) so this override always wins over Nuxt UI's own layered
+   definition, regardless of cascade-layer source order.
+   Scoped to :not(.dark): the first version of this override applied unconditionally, and because
+   unlayered rules always beat layered ones, it kept forcing the light cream background even in
+   dark mode — while every other token correctly switched to its dark-mode value, producing
+   light-on-dark/washed-out contrast everywhere. Dark mode's own --ui-bg (neutral-900-derived) was
+   already correct and needs no override. */
+:root:not(.dark), :host:not(.dark) {
+  --ui-bg: var(--color-sand-50);
+}

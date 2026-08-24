@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DashboardResponse } from '~/types/api'
+import type { DashboardResponse, LearningStreakSummary } from '~/types/api'
 
 const { t } = useI18n()
 const { request } = useApi()
@@ -7,13 +7,21 @@ const authStore = useAuthStore()
 const toast = useToast()
 
 const dashboard = ref<DashboardResponse | null>(null)
+const streak = ref<LearningStreakSummary | null>(null)
 
 try {
-  dashboard.value = await request<DashboardResponse>('/dashboard')
+  const [dashboardResult, streakResult] = await Promise.all([
+    request<DashboardResponse>('/dashboard'),
+    request<LearningStreakSummary>('/dashboard/learning-streak'),
+  ])
+  dashboard.value = dashboardResult
+  streak.value = streakResult
 }
 catch {
   toast.add({ title: t('common.error'), color: 'error' })
 }
+
+const hoursThisMonth = computed(() => ((streak.value?.minutesThisMonth ?? 0) / 60).toFixed(1))
 
 function formatDate(value: string): string {
   return new Date(value).toLocaleDateString()
@@ -38,6 +46,22 @@ const stats = computed(() => {
     <p class="text-muted mb-6">
       {{ t('dashboard.role', { role: authStore.user?.roles.join(', ') }) }}
     </p>
+
+    <UCard v-if="streak" class="mb-6">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center justify-center size-10 rounded-full bg-accent-100 text-accent-600 shrink-0">
+          <UIcon name="i-lucide-flame" class="size-5" />
+        </div>
+        <div>
+          <p class="font-medium">
+            {{ t('dashboard.streak.title') }}
+          </p>
+          <p class="text-sm text-muted">
+            {{ t('dashboard.streak.summary', { hours: hoursThisMonth, days: streak.currentStreakDays }) }}
+          </p>
+        </div>
+      </div>
+    </UCard>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
       <StatCard icon="i-lucide-book-open" :value="stats.enrolled" :label="t('dashboard.stats.enrolled')" />

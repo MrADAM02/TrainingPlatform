@@ -14,6 +14,7 @@
     "courses": "Courses",
     "search": "Search",
     "certificates": "Certificates",
+    "library": "My Library",
     "logout": "Log out",
     "colorMode": {
       "light": "Light",
@@ -45,6 +46,10 @@
       "active": "Active",
       "completed": "Completed",
       "materials": "Course Materials"
+    },
+    "streak": {
+      "title": "Learning streak",
+      "summary": "{hours}h this month · {days}-day streak"
     }
   },
   "search": {
@@ -133,6 +138,8 @@
     "manage": "Manage",
     "view": "View",
     "enrolled": "Enrolled",
+    "bookmark": "Save to My Library",
+    "unbookmark": "Remove from My Library",
     "notEnrolledNotice": "You need to be enrolled to download this course's materials. Contact your administrator or trainer.",
     "overview": {
       "title": "Course Overview",
@@ -193,7 +200,14 @@
       "close": "Close",
       "watch": "Watch",
       "watchError": "Couldn't load video.",
-      "retry": "Retry"
+      "retry": "Retry",
+      "durationMinutes": "{minutes} min",
+      "editLessonDetails": "Edit lesson details",
+      "transcriptText": "Transcript",
+      "summaryText": "Written summary",
+      "keyTakeaway": "Lesson idea",
+      "duration": "Duration (minutes)",
+      "lessonDetailsSaved": "Lesson details saved."
     },
     "enrollments": {
       "title": "Enrolled Trainees",
@@ -249,6 +263,21 @@
       "viewCertificate": "View certificate",
       "answerAllQuestions": "Answer every question before submitting."
     }
+  },
+  "library": {
+    "title": "My Library",
+    "empty": "You haven't saved any courses yet. Bookmark a course to find it here."
+  },
+  "lessons": {
+    "backToCourse": "Back to course",
+    "lessonOf": "Lesson {current} of {total}",
+    "tabVideo": "Video",
+    "tabTranscript": "Transcript",
+    "tabSummary": "Summary",
+    "keyTakeaway": "Lesson idea",
+    "noTranscript": "No transcript available for this lesson yet.",
+    "noSummary": "No summary available for this lesson yet.",
+    "notFound": "Lesson not found."
   },
   "reports": {
     "title": "Reports",

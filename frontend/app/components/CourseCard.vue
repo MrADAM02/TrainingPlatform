@@ -4,21 +4,34 @@
 // action buttons (Manage/Publish/Delete) own navigation instead. `isPublished` and `isEnrolled`
 // are independent optional badges — pass whichever is relevant to the calling page's context,
 // matching the two badge behaviors the pre-redesign pages already had.
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   id: string
   title: string
   description?: string | null
   to?: string
   isPublished?: boolean
   isEnrolled?: boolean
+  // undefined = don't render the bookmark toggle at all (e.g. trainer management mode).
+  isBookmarked?: boolean
 }>(), {
   description: null,
   to: undefined,
   isPublished: undefined,
   isEnrolled: undefined,
+  isBookmarked: undefined,
 })
 
+const emit = defineEmits<{
+  toggleBookmark: [id: string]
+}>()
+
 const { t } = useI18n()
+
+function onToggleBookmark(event: Event) {
+  event.preventDefault()
+  event.stopPropagation()
+  emit('toggleBookmark', props.id)
+}
 
 // resolveComponent, not the string 'NuxtLink', so :is actually resolves to the component
 // instead of rendering an inert <NuxtLink> custom-element tag with no click behavior.
@@ -39,6 +52,18 @@ const NuxtLinkComponent = resolveComponent('NuxtLink')
         <UBadge v-else-if="isEnrolled" color="success" variant="solid" class="absolute top-2 inset-s-2">
           {{ t('courses.enrolled') }}
         </UBadge>
+
+        <button
+          v-if="isBookmarked !== undefined" type="button"
+          class="absolute top-2 inset-e-2 flex items-center justify-center size-7 rounded-full bg-default/90 shadow-sm"
+          :aria-label="isBookmarked ? t('courses.unbookmark') : t('courses.bookmark')"
+          @click="onToggleBookmark"
+        >
+          <UIcon
+            name="i-lucide-bookmark" class="size-4"
+            :class="isBookmarked ? 'fill-current text-primary' : 'text-muted'"
+          />
+        </button>
       </CourseCoverPlaceholder>
 
       <div class="p-4">

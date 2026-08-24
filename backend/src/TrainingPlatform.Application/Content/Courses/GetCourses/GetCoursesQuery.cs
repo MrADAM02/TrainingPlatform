@@ -44,10 +44,15 @@ public sealed class GetCoursesQueryHandler(IApplicationDbContext dbContext, IUse
             .Where(e => e.UserId == currentUser.UserId && courseIds.Contains(e.CourseId))
             .Select(e => e.CourseId)
             .ToListAsync(cancellationToken);
+        var bookmarkedCourseIds = await dbContext.CourseBookmarks
+            .Where(b => b.UserId == currentUser.UserId && courseIds.Contains(b.CourseId))
+            .Select(b => b.CourseId)
+            .ToListAsync(cancellationToken);
 
         var items = pagedCourses
             .Select(c => new CourseSummary(
-                c.Id, c.Title, c.Description, c.TrainerId, c.IsPublished, c.CreatedAtUtc, enrolledCourseIds.Contains(c.Id)))
+                c.Id, c.Title, c.Description, c.TrainerId, c.IsPublished, c.CreatedAtUtc,
+                enrolledCourseIds.Contains(c.Id), bookmarkedCourseIds.Contains(c.Id)))
             .ToList();
 
         return new PaginatedList<CourseSummary>

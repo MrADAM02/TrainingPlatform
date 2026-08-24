@@ -10,4 +10,9 @@ public sealed record DocumentSummary(
     string ContentType,
     long SizeBytes,
     int Version,
-    DateTime UploadedAtUtc);
+    DateTime UploadedAtUtc,
+    string? TranscriptText,
+    string? SummaryText,
+    string? KeyTakeaway,
+    int? DurationMinutes,
+    bool IsCompleted);

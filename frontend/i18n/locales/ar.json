@@ -14,6 +14,7 @@
     "courses": "الدورات",
     "search": "بحث",
     "certificates": "الشهادات",
+    "library": "مكتبتي",
     "logout": "تسجيل الخروج",
     "colorMode": {
       "light": "فاتح",
@@ -45,6 +46,10 @@
       "active": "قيد التقدم",
       "completed": "مكتملة",
       "materials": "المواد التعليمية"
+    },
+    "streak": {
+      "title": "تتابع التعلّم",
+      "summary": "{hours} ساعة هذا الشهر · تتابع {days} أيام"
     }
   },
   "search": {
@@ -133,6 +138,8 @@
     "manage": "إدارة",
     "view": "عرض",
     "enrolled": "مسجّل",
+    "bookmark": "حفظ في مكتبتي",
+    "unbookmark": "إزالة من مكتبتي",
     "notEnrolledNotice": "يجب أن تكون مسجلاً للتمكن من تنزيل مواد هذه الدورة. تواصل مع المسؤول أو المدرب.",
     "overview": {
       "title": "نظرة عامة على الدورة",
@@ -193,7 +200,14 @@
       "close": "إغلاق",
       "watch": "مشاهدة",
       "watchError": "تعذر تحميل الفيديو.",
-      "retry": "إعادة المحاولة"
+      "retry": "إعادة المحاولة",
+      "durationMinutes": "{minutes} د",
+      "editLessonDetails": "تعديل تفاصيل الدرس",
+      "transcriptText": "النص المكتوب",
+      "summaryText": "الملخص المكتوب",
+      "keyTakeaway": "فكرة الدرس",
+      "duration": "المدة (بالدقائق)",
+      "lessonDetailsSaved": "تم حفظ تفاصيل الدرس."
     },
     "enrollments": {
       "title": "المتدربون المسجلون",
@@ -249,6 +263,21 @@
       "viewCertificate": "عرض الشهادة",
       "answerAllQuestions": "أجب عن جميع الأسئلة قبل الإرسال."
     }
+  },
+  "library": {
+    "title": "مكتبتي",
+    "empty": "لم تحفظ أي دورة بعد. احفظ دورة لتجدها هنا."
+  },
+  "lessons": {
+    "backToCourse": "العودة إلى الدورة",
+    "lessonOf": "الدرس {current} من {total}",
+    "tabVideo": "الفيديو",
+    "tabTranscript": "النص المكتوب",
+    "tabSummary": "ملخص الدرس",
+    "keyTakeaway": "فكرة الدرس",
+    "noTranscript": "لا يوجد نص مكتوب لهذا الدرس بعد.",
+    "noSummary": "لا يوجد ملخص لهذا الدرس بعد.",
+    "notFound": "الدرس غير موجود."
   },
   "reports": {
     "title": "التقارير",

@@ -1,4 +1,7 @@
 using TrainingPlatform.Application.Abstractions.Messaging;
+using TrainingPlatform.Application.Content.Bookmarks.AddBookmark;
+using TrainingPlatform.Application.Content.Bookmarks.GetMyBookmarks;
+using TrainingPlatform.Application.Content.Bookmarks.RemoveBookmark;
 using TrainingPlatform.Application.Content.Courses.CreateCourse;
 using TrainingPlatform.Application.Content.Courses.DeleteCourse;
 using TrainingPlatform.Application.Content.Courses.GetCourseById;
@@ -62,6 +65,26 @@ public static class CourseEndpoints
             return result.IsSuccess ? Results.NoContent() : CustomResults.Problem(result);
         })
         .RequireAuthorization("RequireTrainerOrAdministrator");
+
+        group.MapPost("/{id:guid}/bookmark", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new AddBookmarkCommand(id), ct);
+            return result.IsSuccess ? Results.NoContent() : CustomResults.Problem(result);
+        });
+
+        group.MapDelete("/{id:guid}/bookmark", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new RemoveBookmarkCommand(id), ct);
+            return result.IsSuccess ? Results.NoContent() : CustomResults.Problem(result);
+        });
+
+        var bookmarks = app.MapGroup("/api/v1/bookmarks").WithTags("Courses").RequireAuthorization();
+
+        bookmarks.MapGet("/", async (ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetMyBookmarksQuery(), ct);
+            return result.IsSuccess ? Results.Ok(result.Value) : CustomResults.Problem(result);
+        });
 
         return app;
     }

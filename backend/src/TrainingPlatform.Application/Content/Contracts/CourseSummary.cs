@@ -7,4 +7,5 @@ public sealed record CourseSummary(
     Guid TrainerId,
     bool IsPublished,
     DateTime CreatedAtUtc,
-    bool IsEnrolled);
+    bool IsEnrolled,
+    bool IsBookmarked);

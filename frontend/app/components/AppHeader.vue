@@ -2,6 +2,7 @@
 const { t } = useI18n()
 const navigation = useNavigation()
 const route = useRoute()
+const { refresh: refreshBookmarkCount } = useBookmarkCount()
 
 const isMenuOpen = ref(false)
 
@@ -11,11 +12,17 @@ watch(() => route.fullPath, () => {
   isMenuOpen.value = false
 })
 
+// Client-only and non-blocking on purpose — this is a nav badge, not page content, so it
+// shouldn't delay SSR for every single page just to show a count.
+onMounted(() => {
+  refreshBookmarkCount()
+})
+
 const menuItems = computed(() => [
   ...navigation.value.main,
   ...navigation.value.trainer,
   ...navigation.value.admin,
-].map(item => ({ label: t(item.labelKey), icon: item.icon, to: item.to })))
+].map(item => ({ label: t(item.labelKey), icon: item.icon, to: item.to, badge: item.badge })))
 </script>
 
 <template>

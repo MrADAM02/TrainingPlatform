@@ -26,6 +26,21 @@ public sealed class Document
     /// uploader.</summary>
     public Guid? UploadedByUserId { get; private set; }
 
+    /// <summary>Lesson-detail fields (2026-08-24 redesign), meaningful for <see
+    /// cref="DocumentType.Video"/> documents but not type-enforced at this layer — a non-video
+    /// document simply never gets these set. All optional; trainer-authored.</summary>
+    public string? TranscriptText { get; private set; }
+
+    public string? SummaryText { get; private set; }
+
+    public string? KeyTakeaway { get; private set; }
+
+    /// <summary>Trainer-entered video length in minutes. Deliberately not auto-detected from the
+    /// file (no video-inspection library in this stack) — left null until a trainer sets it, so
+    /// downstream stats (e.g. the learning-streak "hours" figure) only ever sum real, trainer-
+    /// provided durations rather than a fabricated estimate.</summary>
+    public int? DurationMinutes { get; private set; }
+
     private Document()
     {
     }
@@ -67,6 +82,16 @@ public sealed class Document
         Version += 1;
         UploadedAtUtc = DateTime.UtcNow;
         UploadedByUserId = uploadedByUserId;
+    }
+
+    public void UpdateLessonDetails(
+        string title, string? transcriptText, string? summaryText, string? keyTakeaway, int? durationMinutes)
+    {
+        Title = title;
+        TranscriptText = transcriptText;
+        SummaryText = summaryText;
+        KeyTakeaway = keyTakeaway;
+        DurationMinutes = durationMinutes;
     }
 
     public static DocumentType InferFileType(string contentType)

@@ -7,14 +7,14 @@
 // Gradient classes are written out in full (not built from interpolated strings) so Tailwind's
 // static scanner can actually find and generate them.
 const GRADIENTS = [
-  'from-violet-500 to-fuchsia-500',
-  'from-sky-500 to-blue-600',
-  'from-emerald-500 to-teal-600',
-  'from-amber-500 to-orange-600',
-  'from-rose-500 to-pink-600',
-  'from-indigo-500 to-purple-600',
-  'from-cyan-500 to-sky-600',
-  'from-lime-500 to-emerald-600',
+  'from-brand-600 to-brand-800',
+  'from-brand-500 to-brand-700',
+  'from-accent-500 to-accent-700',
+  'from-accent-400 to-brand-600',
+  'from-brand-700 to-accent-600',
+  'from-brand-400 to-brand-700',
+  'from-accent-600 to-brand-800',
+  'from-brand-500 to-accent-500',
 ]
 
 const ICONS = [

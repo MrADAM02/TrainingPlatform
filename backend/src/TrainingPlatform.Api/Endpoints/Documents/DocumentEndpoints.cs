@@ -5,6 +5,7 @@ using TrainingPlatform.Application.Content.Documents.GetDocumentVersionDownloadU
 using TrainingPlatform.Application.Content.Documents.GetDocumentVersions;
 using TrainingPlatform.Application.Content.Documents.ReplaceDocumentFile;
 using TrainingPlatform.Application.Content.Documents.RequestDocumentUpload;
+using TrainingPlatform.Application.Content.Documents.UpdateDocumentLessonDetails;
 
 namespace TrainingPlatform.Api.Endpoints.Documents;
 
@@ -55,6 +56,14 @@ public static class DocumentEndpoints
             return result.IsSuccess ? Results.Ok(result.Value) : CustomResults.Problem(result);
         });
 
+        versions.MapPut("/{id:guid}/lesson-details", async (Guid id, UpdateLessonDetailsRequest request, ISender sender, CancellationToken ct) =>
+        {
+            var command = new UpdateDocumentLessonDetailsCommand(
+                id, request.Title, request.TranscriptText, request.SummaryText, request.KeyTakeaway, request.DurationMinutes);
+            var result = await sender.Send(command, ct);
+            return result.IsSuccess ? Results.NoContent() : CustomResults.Problem(result);
+        });
+
         var documentVersions = app.MapGroup("/api/v1/document-versions")
             .WithTags("Documents")
             .RequireAuthorization("RequireTrainerOrAdministrator");
@@ -72,3 +81,6 @@ public static class DocumentEndpoints
 public sealed record RequestUploadRequest(string Title, string FileName, string ContentType, long SizeBytes);
 
 public sealed record ReplaceUploadRequest(string FileName, string ContentType, long SizeBytes);
+
+public sealed record UpdateLessonDetailsRequest(
+    string Title, string? TranscriptText, string? SummaryText, string? KeyTakeaway, int? DurationMinutes);
