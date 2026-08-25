@@ -18,4 +18,9 @@ public static class ContentErrors
 
     public static readonly Error CourseNotAccessible = Error.Forbidden(
         "Content.CourseNotAccessible", "You are not enrolled in this course.");
+
+    /// <summary>A <see cref="DocumentType.Text"/> lesson has no uploaded file — nothing to
+    /// download, replace, or version.</summary>
+    public static readonly Error DocumentHasNoFile = Error.Validation(
+        "Content.DocumentHasNoFile", "This lesson has no file — it's a text lesson.");
 }

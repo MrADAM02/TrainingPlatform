@@ -45,9 +45,10 @@ public sealed class DeleteCourseCommandHandler(
             .Select(m => m.Id)
             .ToListAsync(cancellationToken);
 
+        // Text lessons have no StorageKey (no file) — nothing to delete from storage for those.
         var storageKeys = await dbContext.Documents
-            .Where(d => moduleIds.Contains(d.ModuleId))
-            .Select(d => d.StorageKey)
+            .Where(d => moduleIds.Contains(d.ModuleId) && d.StorageKey != null)
+            .Select(d => d.StorageKey!)
             .ToListAsync(cancellationToken);
 
         foreach (var storageKey in storageKeys)

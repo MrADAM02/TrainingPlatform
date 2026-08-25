@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TrainingPlatform.Infrastructure.Database;
@@ -11,9 +12,11 @@ using TrainingPlatform.Infrastructure.Database;
 namespace TrainingPlatform.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260825183423_AddDocumentPageCount")]
+    partial class AddDocumentPageCount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -363,6 +366,7 @@ namespace TrainingPlatform.Infrastructure.Database.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("ContentType")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("content_type");
@@ -387,15 +391,12 @@ namespace TrainingPlatform.Infrastructure.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("page_count");
 
-                    b.Property<string>("Quote")
-                        .HasColumnType("text")
-                        .HasColumnName("quote");
-
-                    b.Property<long?>("SizeBytes")
+                    b.Property<long>("SizeBytes")
                         .HasColumnType("bigint")
                         .HasColumnName("size_bytes");
 
                     b.Property<string>("StorageKey")
+                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("storage_key");

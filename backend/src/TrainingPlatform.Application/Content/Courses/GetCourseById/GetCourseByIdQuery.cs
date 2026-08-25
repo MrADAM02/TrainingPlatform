@@ -68,7 +68,8 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
                     .Where(d => d.ModuleId == m.Id)
                     .Select(d => new DocumentSummary(
                         d.Id, d.ModuleId, d.Title, d.FileType, d.ContentType, d.SizeBytes, d.Version, d.UploadedAtUtc,
-                        d.TranscriptText, d.SummaryText, d.KeyTakeaway, d.DurationMinutes, completedDocumentIds.Contains(d.Id)))
+                        d.TranscriptText, d.SummaryText, d.KeyTakeaway, d.DurationMinutes, d.PageCount, d.Quote,
+                        completedDocumentIds.Contains(d.Id)))
                     .ToList(),
                 quizzes
                     .Where(q => q.ModuleId == m.Id)

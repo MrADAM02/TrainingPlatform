@@ -145,6 +145,8 @@
       "title": "نظرة عامة على الدورة",
       "modules": "{count} وحدات",
       "materials": "{count} مواد",
+      "modulesLabel": "الوحدات",
+      "materialsLabel": "المواد",
       "viewContent": "عرض المحتوى"
     },
     "content": "محتوى الدورة",
@@ -199,6 +201,8 @@
       "unknownUploader": "رافع غير معروف",
       "close": "إغلاق",
       "watch": "مشاهدة",
+      "read": "قراءة",
+      "viewLesson": "عرض الدرس",
       "watchError": "تعذر تحميل الفيديو.",
       "retry": "إعادة المحاولة",
       "durationMinutes": "{minutes} د",
@@ -207,6 +211,11 @@
       "summaryText": "الملخص المكتوب",
       "keyTakeaway": "فكرة الدرس",
       "duration": "المدة (بالدقائق)",
+      "pageCountField": "عدد الصفحات",
+      "caption": "التسمية التوضيحية",
+      "createTextLesson": "إنشاء درس نصي",
+      "bodyText": "نص الدرس",
+      "quote": "اقتباس",
       "lessonDetailsSaved": "تم حفظ تفاصيل الدرس."
     },
     "enrollments": {
@@ -277,7 +286,18 @@
     "keyTakeaway": "فكرة الدرس",
     "noTranscript": "لا يوجد نص مكتوب لهذا الدرس بعد.",
     "noSummary": "لا يوجد ملخص لهذا الدرس بعد.",
-    "notFound": "الدرس غير موجود."
+    "notFound": "الدرس غير موجود.",
+    "pageCount": "{count} صفحات",
+    "quickPreview": "معاينة سريعة",
+    "closePreview": "إغلاق المعاينة",
+    "nextLesson": "الدرس التالي",
+    "next": "التالي",
+    "zoomIn": "تكبير",
+    "zoomOut": "تصغير",
+    "readingTime": "قراءة ~{minutes} د",
+    "wordCount": "{count} كلمة",
+    "smallerText": "تصغير الخط",
+    "largerText": "تكبير الخط"
   },
   "reports": {
     "title": "التقارير",

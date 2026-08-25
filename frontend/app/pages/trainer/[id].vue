@@ -30,7 +30,8 @@ function errorDetail(error: unknown, fallback: string): string {
   return (error as { data?: ProblemDetails })?.data?.detail ?? fallback
 }
 
-function formatBytes(bytes: number): string {
+function formatBytes(bytes: number | null): string {
+  if (bytes === null) return '—'
   if (bytes < 1024) return `${bytes} B`
   const units = ['KB', 'MB', 'GB']
   let value = bytes / 1024
@@ -221,6 +222,45 @@ async function handleFileSelected(moduleId: string, file: File | File[] | null |
   }
 }
 
+const textLessonModuleId = ref<string | null>(null)
+const textLessonState = reactive({ title: '', bodyText: '', quote: '' })
+const savingTextLesson = ref(false)
+const isTextLessonOpen = computed({
+  get: () => textLessonModuleId.value !== null,
+  set: (value: boolean) => { if (!value) textLessonModuleId.value = null },
+})
+
+function openCreateTextLesson(moduleId: string) {
+  textLessonModuleId.value = moduleId
+  textLessonState.title = ''
+  textLessonState.bodyText = ''
+  textLessonState.quote = ''
+}
+
+async function saveTextLesson() {
+  if (!textLessonModuleId.value || !textLessonState.title || !textLessonState.bodyText) return
+  savingTextLesson.value = true
+  try {
+    await request(`/modules/${textLessonModuleId.value}/documents/text-lessons`, {
+      method: 'POST',
+      body: {
+        title: textLessonState.title,
+        bodyText: textLessonState.bodyText,
+        quote: textLessonState.quote || null,
+      },
+    })
+    toast.add({ title: t('courses.documents.uploadSuccess'), color: 'success' })
+    textLessonModuleId.value = null
+    await fetchCourse()
+  }
+  catch (error) {
+    toast.add({ title: errorDetail(error, t('common.error')), color: 'error' })
+  }
+  finally {
+    savingTextLesson.value = false
+  }
+}
+
 async function downloadDocument(doc: DocumentSummary) {
   try {
     const result = await request<{ url: string }>(`/documents/${doc.id}/download-url`)
@@ -302,12 +342,20 @@ const lessonDetailsState = reactive({
   summaryText: '',
   keyTakeaway: '',
   durationMinutes: undefined as number | undefined,
+  pageCount: undefined as number | undefined,
+  quote: '',
 })
 const savingLessonDetails = ref(false)
 const isLessonDetailsOpen = computed({
   get: () => editingLessonDocument.value !== null,
   set: (value: boolean) => { if (!value) editingLessonDocument.value = null },
 })
+// Video gets duration + transcript; PDF gets page count; Text gets body + quote; every type gets
+// summary + takeaway.
+const editingIsVideo = computed(() => editingLessonDocument.value?.fileType === 1)
+const editingIsImage = computed(() => editingLessonDocument.value?.fileType === 4)
+const editingIsPdf = computed(() => editingLessonDocument.value?.fileType === 0)
+const editingIsText = computed(() => editingLessonDocument.value?.fileType === 5)
 
 function openLessonDetails(doc: DocumentSummary) {
   editingLessonDocument.value = doc
@@ -316,6 +364,8 @@ function openLessonDetails(doc: DocumentSummary) {
   lessonDetailsState.summaryText = doc.summaryText ?? ''
   lessonDetailsState.keyTakeaway = doc.keyTakeaway ?? ''
   lessonDetailsState.durationMinutes = doc.durationMinutes ?? undefined
+  lessonDetailsState.quote = doc.quote ?? ''
+  lessonDetailsState.pageCount = doc.pageCount ?? undefined
 }
 
 async function saveLessonDetails() {
@@ -330,6 +380,8 @@ async function saveLessonDetails() {
         summaryText: lessonDetailsState.summaryText || null,
         keyTakeaway: lessonDetailsState.keyTakeaway || null,
         durationMinutes: lessonDetailsState.durationMinutes || null,
+        pageCount: lessonDetailsState.pageCount || null,
+        quote: lessonDetailsState.quote || null,
       },
     })
     toast.add({ title: t('courses.documents.lessonDetailsSaved'), color: 'success' })
@@ -571,12 +623,19 @@ function formatDate(value: string): string {
                     @click="toggleVideo(row.original.id)"
                   />
                   <UButton
-                    v-if="row.original.fileType === 1" size="xs" variant="soft"
+                    v-if="[0, 1, 4, 5].includes(row.original.fileType)" size="xs" variant="soft"
                     :label="t('courses.documents.editLessonDetails')" @click="openLessonDetails(row.original)"
                   />
-                  <UButton size="xs" variant="soft" :label="t('courses.documents.download')" @click="downloadDocument(row.original)" />
-                  <UButton size="xs" variant="soft" :label="t('courses.documents.history')" @click="openVersionHistory(row.original)" />
+                  <UButton
+                    v-if="row.original.fileType !== 5" size="xs" variant="soft"
+                    :label="t('courses.documents.download')" @click="downloadDocument(row.original)"
+                  />
+                  <UButton
+                    v-if="row.original.fileType !== 5" size="xs" variant="soft"
+                    :label="t('courses.documents.history')" @click="openVersionHistory(row.original)"
+                  />
                   <UFileUpload
+                    v-if="row.original.fileType !== 5"
                     :model-value="null"
                     :disabled="replacingDocumentId === row.original.id"
                     @update:model-value="(file) => handleReplaceFileSelected(row.original, file)"
@@ -599,20 +658,26 @@ function formatDate(value: string): string {
             {{ t('courses.documents.empty') }}
           </p>
 
-          <UFileUpload
-            :model-value="null"
-            :disabled="uploadingModuleId === item.value"
-            @update:model-value="(file) => handleFileSelected(item.value as string, file)"
-          >
-            <template #default="{ open }">
-              <UButton
-                size="xs" variant="outline" icon="i-lucide-upload"
-                :loading="uploadingModuleId === item.value"
-                :label="uploadingModuleId === item.value ? t('courses.documents.uploading') : t('courses.documents.upload')"
-                @click="() => open()"
-              />
-            </template>
-          </UFileUpload>
+          <div class="flex gap-2">
+            <UFileUpload
+              :model-value="null"
+              :disabled="uploadingModuleId === item.value"
+              @update:model-value="(file) => handleFileSelected(item.value as string, file)"
+            >
+              <template #default="{ open }">
+                <UButton
+                  size="xs" variant="outline" icon="i-lucide-upload"
+                  :loading="uploadingModuleId === item.value"
+                  :label="uploadingModuleId === item.value ? t('courses.documents.uploading') : t('courses.documents.upload')"
+                  @click="() => open()"
+                />
+              </template>
+            </UFileUpload>
+            <UButton
+              size="xs" variant="outline" icon="i-lucide-file-text"
+              :label="t('courses.documents.createTextLesson')" @click="openCreateTextLesson(item.value as string)"
+            />
+          </div>
 
           <div class="flex items-center justify-between mt-6 mb-3">
             <span class="text-sm font-medium">{{ t('courses.quizzes.title') }}</span>
@@ -795,13 +860,26 @@ function formatDate(value: string): string {
           <UFormField :label="t('courses.documents.title')" name="title">
             <UInput v-model="lessonDetailsState.title" class="w-full" />
           </UFormField>
-          <UFormField :label="t('courses.documents.duration')" name="durationMinutes">
+          <UFormField v-if="editingIsVideo" :label="t('courses.documents.duration')" name="durationMinutes">
             <UInput v-model.number="lessonDetailsState.durationMinutes" type="number" :min="1" class="w-full" />
           </UFormField>
-          <UFormField :label="t('courses.documents.transcriptText')" name="transcriptText">
-            <UTextarea v-model="lessonDetailsState.transcriptText" :rows="4" class="w-full" />
+          <UFormField v-if="editingIsPdf" :label="t('courses.documents.pageCountField')" name="pageCount">
+            <UInput v-model.number="lessonDetailsState.pageCount" type="number" :min="1" class="w-full" />
           </UFormField>
-          <UFormField :label="t('courses.documents.summaryText')" name="summaryText">
+          <UFormField
+            v-if="editingIsVideo || editingIsText"
+            :label="editingIsText ? t('courses.documents.bodyText') : t('courses.documents.transcriptText')"
+            name="transcriptText"
+          >
+            <UTextarea v-model="lessonDetailsState.transcriptText" :rows="6" class="w-full" />
+          </UFormField>
+          <UFormField v-if="editingIsText" :label="t('courses.documents.quote')" name="quote">
+            <UTextarea v-model="lessonDetailsState.quote" :rows="2" class="w-full" />
+          </UFormField>
+          <UFormField
+            :label="editingIsImage ? t('courses.documents.caption') : t('courses.documents.summaryText')"
+            name="summaryText"
+          >
             <UTextarea v-model="lessonDetailsState.summaryText" :rows="3" class="w-full" />
           </UFormField>
           <UFormField :label="t('courses.documents.keyTakeaway')" name="keyTakeaway">
@@ -811,6 +889,30 @@ function formatDate(value: string): string {
         <div class="flex justify-end gap-2 mt-6">
           <UButton variant="ghost" :label="t('courses.cancel')" @click="isLessonDetailsOpen = false" />
           <UButton :loading="savingLessonDetails" :label="t('courses.save')" @click="saveLessonDetails" />
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Create text lesson -->
+    <UModal v-model:open="isTextLessonOpen" :title="t('courses.documents.createTextLesson')">
+      <template #body>
+        <div class="space-y-4">
+          <UFormField :label="t('courses.documents.title')" name="title">
+            <UInput v-model="textLessonState.title" class="w-full" />
+          </UFormField>
+          <UFormField :label="t('courses.documents.bodyText')" name="bodyText">
+            <UTextarea v-model="textLessonState.bodyText" :rows="8" class="w-full" />
+          </UFormField>
+          <UFormField :label="t('courses.documents.quote')" name="quote">
+            <UTextarea v-model="textLessonState.quote" :rows="2" class="w-full" />
+          </UFormField>
+        </div>
+        <div class="flex justify-end gap-2 mt-6">
+          <UButton variant="ghost" :label="t('courses.cancel')" @click="isTextLessonOpen = false" />
+          <UButton
+            :loading="savingTextLesson" :disabled="!textLessonState.title || !textLessonState.bodyText"
+            :label="t('courses.save')" @click="saveTextLesson"
+          />
         </div>
       </template>
     </UModal>

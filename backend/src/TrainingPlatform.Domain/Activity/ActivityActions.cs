@@ -23,6 +23,8 @@ public static class ActivityActions
     public const string DocumentUpdated = "DocumentUpdated";
     public const string DocumentDeleted = "DocumentDeleted";
     public const string DocumentDownloaded = "DocumentDownloaded";
+    public const string TextLessonCreated = "TextLessonCreated";
+    public const string LessonViewed = "LessonViewed";
 
     public const string UsersEnrolled = "UsersEnrolled";
     public const string UserUnenrolled = "UserUnenrolled";

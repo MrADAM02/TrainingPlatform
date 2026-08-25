@@ -145,6 +145,8 @@
       "title": "Course Overview",
       "modules": "{count} modules",
       "materials": "{count} materials",
+      "modulesLabel": "Modules",
+      "materialsLabel": "Materials",
       "viewContent": "View Content"
     },
     "content": "Course Content",
@@ -199,6 +201,8 @@
       "unknownUploader": "Unknown uploader",
       "close": "Close",
       "watch": "Watch",
+      "read": "Read",
+      "viewLesson": "View lesson",
       "watchError": "Couldn't load video.",
       "retry": "Retry",
       "durationMinutes": "{minutes} min",
@@ -207,6 +211,11 @@
       "summaryText": "Written summary",
       "keyTakeaway": "Lesson idea",
       "duration": "Duration (minutes)",
+      "pageCountField": "Page count",
+      "caption": "Caption",
+      "createTextLesson": "Create text lesson",
+      "bodyText": "Body",
+      "quote": "Pull quote",
       "lessonDetailsSaved": "Lesson details saved."
     },
     "enrollments": {
@@ -277,7 +286,18 @@
     "keyTakeaway": "Lesson idea",
     "noTranscript": "No transcript available for this lesson yet.",
     "noSummary": "No summary available for this lesson yet.",
-    "notFound": "Lesson not found."
+    "notFound": "Lesson not found.",
+    "pageCount": "{count} pages",
+    "quickPreview": "Quick preview",
+    "closePreview": "Close preview",
+    "nextLesson": "Next lesson",
+    "next": "Next",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "readingTime": "~{minutes} min read",
+    "wordCount": "{count} words",
+    "smallerText": "Smaller text",
+    "largerText": "Larger text"
   },
   "reports": {
     "title": "Reports",

@@ -1,8 +1,10 @@
 using TrainingPlatform.Application.Abstractions.Messaging;
+using TrainingPlatform.Application.Content.Documents.CreateTextLesson;
 using TrainingPlatform.Application.Content.Documents.DeleteDocument;
 using TrainingPlatform.Application.Content.Documents.GetDocumentDownloadUrl;
 using TrainingPlatform.Application.Content.Documents.GetDocumentVersionDownloadUrl;
 using TrainingPlatform.Application.Content.Documents.GetDocumentVersions;
+using TrainingPlatform.Application.Content.Documents.MarkLessonViewed;
 using TrainingPlatform.Application.Content.Documents.ReplaceDocumentFile;
 using TrainingPlatform.Application.Content.Documents.RequestDocumentUpload;
 using TrainingPlatform.Application.Content.Documents.UpdateDocumentLessonDetails;
@@ -26,12 +28,28 @@ public static class DocumentEndpoints
             return result.IsSuccess ? Results.Ok(result.Value) : CustomResults.Problem(result);
         });
 
+        moduleDocuments.MapPost("/text-lessons", async (
+            Guid moduleId, CreateTextLessonRequest request, ISender sender, CancellationToken ct) =>
+        {
+            var command = new CreateTextLessonCommand(moduleId, request.Title, request.BodyText, request.Quote);
+            var result = await sender.Send(command, ct);
+            return result.IsSuccess
+                ? Results.Created($"/api/v1/documents/{result.Value}", new { id = result.Value })
+                : CustomResults.Problem(result);
+        });
+
         var documents = app.MapGroup("/api/v1/documents").WithTags("Documents").RequireAuthorization();
 
         documents.MapGet("/{id:guid}/download-url", async (Guid id, ISender sender, CancellationToken ct) =>
         {
             var result = await sender.Send(new GetDocumentDownloadUrlQuery(id), ct);
             return result.IsSuccess ? Results.Ok(new { url = result.Value }) : CustomResults.Problem(result);
+        });
+
+        documents.MapPost("/{id:guid}/mark-viewed", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new MarkLessonViewedCommand(id), ct);
+            return result.IsSuccess ? Results.NoContent() : CustomResults.Problem(result);
         });
 
         documents.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
@@ -59,7 +77,8 @@ public static class DocumentEndpoints
         versions.MapPut("/{id:guid}/lesson-details", async (Guid id, UpdateLessonDetailsRequest request, ISender sender, CancellationToken ct) =>
         {
             var command = new UpdateDocumentLessonDetailsCommand(
-                id, request.Title, request.TranscriptText, request.SummaryText, request.KeyTakeaway, request.DurationMinutes);
+                id, request.Title, request.TranscriptText, request.SummaryText, request.KeyTakeaway,
+                request.DurationMinutes, request.PageCount, request.Quote);
             var result = await sender.Send(command, ct);
             return result.IsSuccess ? Results.NoContent() : CustomResults.Problem(result);
         });
@@ -83,4 +102,7 @@ public sealed record RequestUploadRequest(string Title, string FileName, string 
 public sealed record ReplaceUploadRequest(string FileName, string ContentType, long SizeBytes);
 
 public sealed record UpdateLessonDetailsRequest(
-    string Title, string? TranscriptText, string? SummaryText, string? KeyTakeaway, int? DurationMinutes);
+    string Title, string? TranscriptText, string? SummaryText, string? KeyTakeaway,
+    int? DurationMinutes, int? PageCount, string? Quote);
+
+public sealed record CreateTextLessonRequest(string Title, string BodyText, string? Quote);

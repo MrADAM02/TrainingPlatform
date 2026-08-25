@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AccordionItem } from '@nuxt/ui'
 import type { CourseDetails, DocumentSummary, ProblemDetails } from '~/types/api'
-import { documentTypeLabels } from '~/types/api'
+import { documentTypeIcons, documentTypeLabels } from '~/types/api'
 
 const { t, locale } = useI18n()
 const { request } = useApi()
@@ -39,7 +39,8 @@ function moduleById(id: string) {
   return course.value?.modules.find(m => m.id === id) ?? null
 }
 
-function formatBytes(bytes: number): string {
+function formatBytes(bytes: number | null): string {
+  if (bytes === null) return ''
   if (bytes < 1024) return `${bytes} B`
   const units = ['KB', 'MB', 'GB']
   let value = bytes / 1024
@@ -49,6 +50,10 @@ function formatBytes(bytes: number): string {
     unitIndex += 1
   }
   return `${value.toFixed(1)} ${units[unitIndex]}`
+}
+
+function scrollToContent() {
+  document.getElementById('course-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 async function downloadDocument(doc: DocumentSummary) {
@@ -90,14 +95,36 @@ async function downloadDocument(doc: DocumentSummary) {
             </UBadge>
           </div>
 
-          <p class="text-sm text-muted mb-1">
-            {{ t('courses.overview.modules', { count: moduleCount }) }}
-          </p>
-          <p class="text-sm text-muted mb-4">
-            {{ t('courses.overview.materials', { count: materialCount }) }}
-          </p>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="flex items-center gap-2">
+              <div class="flex items-center justify-center size-9 rounded-lg bg-primary/10 text-primary shrink-0">
+                <UIcon name="i-lucide-layers" class="size-4" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-lg font-semibold leading-tight">
+                  {{ moduleCount }}
+                </p>
+                <p class="text-xs text-muted truncate">
+                  {{ t('courses.overview.modulesLabel') }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="flex items-center justify-center size-9 rounded-lg bg-primary/10 text-primary shrink-0">
+                <UIcon name="i-lucide-file-stack" class="size-4" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-lg font-semibold leading-tight">
+                  {{ materialCount }}
+                </p>
+                <p class="text-xs text-muted truncate">
+                  {{ t('courses.overview.materialsLabel') }}
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <UButton block variant="soft" icon="i-lucide-list" :label="t('courses.overview.viewContent')" to="#course-content" />
+          <UButton block variant="soft" icon="i-lucide-list" :label="t('courses.overview.viewContent')" @click="scrollToContent" />
         </UCard>
 
         <UAlert
@@ -118,26 +145,35 @@ async function downloadDocument(doc: DocumentSummary) {
         <UAccordion :items="accordionItems" :default-value="accordionItems[0]?.value">
           <template #body="{ item }">
             <template v-if="moduleById(item.value as string)">
-              <ul v-if="moduleById(item.value as string)!.documents.length > 0" class="space-y-2">
-                <li v-for="doc in moduleById(item.value as string)!.documents" :key="doc.id" class="flex items-center justify-between text-sm">
-                  <span>
-                    {{ doc.title }}
-                    <UBadge variant="subtle" size="sm" class="ms-2">
-                      {{ documentTypeLabels[doc.fileType] }}
-                    </UBadge>
-                    <UBadge v-if="doc.durationMinutes" variant="subtle" color="neutral" size="sm" class="ms-1">
-                      {{ t('courses.documents.durationMinutes', { minutes: doc.durationMinutes }) }}
-                    </UBadge>
-                    <span class="text-muted ms-2">{{ formatBytes(doc.sizeBytes) }}</span>
-                  </span>
-                  <div class="flex items-center gap-2">
+              <ul v-if="moduleById(item.value as string)!.documents.length > 0" class="space-y-1">
+                <li
+                  v-for="doc in moduleById(item.value as string)!.documents" :key="doc.id"
+                  class="flex items-center justify-between gap-3 p-3 rounded-lg hover:bg-elevated/50 transition-colors"
+                >
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="flex items-center justify-center size-9 rounded-lg bg-primary/10 text-primary shrink-0">
+                      <UIcon :name="documentTypeIcons[doc.fileType]" class="size-4" />
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-sm font-medium truncate">
+                        {{ doc.title }}
+                      </p>
+                      <p class="text-xs text-muted truncate">
+                        {{ documentTypeLabels[doc.fileType] }}
+                        <span v-if="doc.durationMinutes"> · {{ t('courses.documents.durationMinutes', { minutes: doc.durationMinutes }) }}</span>
+                        <span v-if="doc.sizeBytes !== null"> · {{ formatBytes(doc.sizeBytes) }}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
                     <UButton
-                      v-if="doc.fileType === 1" size="xs" variant="soft" :disabled="!course.canDownload"
-                      icon="i-lucide-play" :label="t('courses.documents.watch')"
+                      size="xs" variant="soft" :disabled="!course.canDownload"
+                      :icon="doc.fileType === 1 ? 'i-lucide-play' : doc.fileType === 5 ? 'i-lucide-file-text' : 'i-lucide-book-open'"
+                      :label="doc.fileType === 1 ? t('courses.documents.watch') : doc.fileType === 5 ? t('courses.documents.read') : t('courses.documents.viewLesson')"
                       :to="course.canDownload ? `/lessons/${doc.id}?courseId=${courseId}` : undefined"
                     />
                     <UButton
-                      size="xs" variant="soft" :disabled="!course.canDownload"
+                      v-if="doc.fileType !== 5" size="xs" variant="soft" :disabled="!course.canDownload"
                       :label="t('courses.documents.download')" @click="downloadDocument(doc)"
                     />
                   </div>
@@ -151,19 +187,26 @@ async function downloadDocument(doc: DocumentSummary) {
                 <p class="text-sm font-medium mt-4 mb-2">
                   {{ t('courses.quizzes.title') }}
                 </p>
-                <ul class="space-y-2">
+                <ul class="space-y-1">
                   <li
                     v-for="quiz in moduleById(item.value as string)!.quizzes" :key="quiz.id"
-                    class="flex items-center justify-between text-sm"
+                    class="flex items-center justify-between gap-3 p-3 rounded-lg hover:bg-elevated/50 transition-colors"
                   >
-                    <span>
-                      {{ quiz.title }}
-                      <UBadge v-if="quiz.isRequiredForCompletion" color="primary" variant="subtle" size="sm" class="ms-2">
-                        {{ t('courses.quizzes.required') }}
-                      </UBadge>
-                    </span>
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="flex items-center justify-center size-9 rounded-lg bg-secondary/10 text-secondary shrink-0">
+                        <UIcon name="i-lucide-list-checks" class="size-4" />
+                      </div>
+                      <div class="min-w-0">
+                        <p class="text-sm font-medium truncate">
+                          {{ quiz.title }}
+                        </p>
+                        <p v-if="quiz.isRequiredForCompletion" class="text-xs text-muted truncate">
+                          {{ t('courses.quizzes.required') }}
+                        </p>
+                      </div>
+                    </div>
                     <UButton
-                      size="xs" variant="soft" icon="i-lucide-list-checks"
+                      size="xs" variant="soft" icon="i-lucide-list-checks" class="shrink-0"
                       :label="t('courses.quizzes.startQuiz')" :to="`/quizzes/${quiz.id}`"
                     />
                   </li>

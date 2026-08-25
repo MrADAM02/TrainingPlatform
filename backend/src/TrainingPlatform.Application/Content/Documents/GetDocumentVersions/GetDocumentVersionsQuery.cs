@@ -41,6 +41,11 @@ public sealed class GetDocumentVersionsQueryHandler(
             return Result.Failure<IReadOnlyList<DocumentVersionItem>>(ContentErrors.NotCourseOwner);
         }
 
+        if (document.SizeBytes is null)
+        {
+            return Result.Failure<IReadOnlyList<DocumentVersionItem>>(ContentErrors.DocumentHasNoFile);
+        }
+
         var archivedVersions = await dbContext.DocumentVersions.AsNoTracking()
             .Where(v => v.DocumentId == document.Id)
             .OrderByDescending(v => v.Version)
@@ -66,7 +71,7 @@ public sealed class GetDocumentVersionsQueryHandler(
 
         var items = new List<DocumentVersionItem>
         {
-            new(null, document.Version, true, document.SizeBytes, document.UploadedAtUtc, currentUploader?.Email, currentUploader?.FullName),
+            new(null, document.Version, true, document.SizeBytes.Value, document.UploadedAtUtc, currentUploader?.Email, currentUploader?.FullName),
         };
 
         items.AddRange(archivedVersions.Select(v =>

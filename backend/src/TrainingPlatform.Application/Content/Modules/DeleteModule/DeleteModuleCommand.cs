@@ -41,9 +41,10 @@ public sealed class DeleteModuleCommandHandler(
             return Result.Failure(ContentErrors.NotCourseOwner);
         }
 
+        // Text lessons have no StorageKey (no file) — nothing to delete from storage for those.
         var storageKeys = await dbContext.Documents
-            .Where(d => d.ModuleId == module.Id)
-            .Select(d => d.StorageKey)
+            .Where(d => d.ModuleId == module.Id && d.StorageKey != null)
+            .Select(d => d.StorageKey!)
             .ToListAsync(cancellationToken);
 
         foreach (var storageKey in storageKeys)

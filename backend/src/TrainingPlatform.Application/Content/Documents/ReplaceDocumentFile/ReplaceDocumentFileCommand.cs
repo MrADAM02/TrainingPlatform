@@ -59,9 +59,14 @@ public sealed class ReplaceDocumentFileCommandHandler(
             return Result.Failure<UploadTicket>(ContentErrors.NotCourseOwner);
         }
 
+        if (document.StorageKey is null || document.ContentType is null || document.SizeBytes is null)
+        {
+            return Result.Failure<UploadTicket>(ContentErrors.DocumentHasNoFile);
+        }
+
         var archivedVersion = DocumentVersion.Create(
             document.Id, document.Version, document.FileType, document.ContentType, document.StorageKey,
-            document.SizeBytes, document.UploadedByUserId, document.UploadedAtUtc);
+            document.SizeBytes.Value, document.UploadedByUserId, document.UploadedAtUtc);
         dbContext.DocumentVersions.Add(archivedVersion);
 
         var fileType = Document.InferFileType(command.ContentType);

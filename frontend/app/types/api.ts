@@ -67,21 +67,32 @@ export interface CourseSummary {
 }
 
 // Matches TrainingPlatform.Domain.Content.DocumentType's declaration order (serialized as int).
-export const documentTypeLabels = ['PDF', 'Video', 'Presentation', 'Other'] as const
+export const documentTypeLabels = ['PDF', 'Video', 'Presentation', 'Other', 'Image', 'Text'] as const
+
+export const documentTypeIcons = [
+  'i-lucide-file-text',
+  'i-lucide-video',
+  'i-lucide-presentation',
+  'i-lucide-file',
+  'i-lucide-image',
+  'i-lucide-book-open',
+] as const
 
 export interface DocumentSummary {
   id: string
   moduleId: string
   title: string
   fileType: number
-  contentType: string
-  sizeBytes: number
+  contentType: string | null
+  sizeBytes: number | null
   version: number
   uploadedAtUtc: string
   transcriptText: string | null
   summaryText: string | null
   keyTakeaway: string | null
   durationMinutes: number | null
+  pageCount: number | null
+  quote: string | null
   isCompleted: boolean
 }
 

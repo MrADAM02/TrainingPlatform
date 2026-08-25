@@ -55,7 +55,10 @@ public sealed class DeleteDocumentCommandHandler(
             await fileStorage.DeleteAsync(storageKey, cancellationToken);
         }
 
-        await fileStorage.DeleteAsync(document.StorageKey, cancellationToken);
+        if (document.StorageKey is not null)
+        {
+            await fileStorage.DeleteAsync(document.StorageKey, cancellationToken);
+        }
 
         dbContext.Documents.Remove(document);
         await dbContext.SaveChangesAsync(cancellationToken);

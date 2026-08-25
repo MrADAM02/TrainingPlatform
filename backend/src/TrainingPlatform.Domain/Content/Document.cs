@@ -10,12 +10,16 @@ public sealed class Document
 
     public DocumentType FileType { get; private set; }
 
-    public string ContentType { get; private set; } = string.Empty;
+    /// <summary>Null only for <see cref="DocumentType.Text"/> — a fileless lesson has no content
+    /// type. Every other type always has one.</summary>
+    public string? ContentType { get; private set; }
 
-    /// <summary>Object storage key. The file itself never touches application disk (REQ-CONT-03).</summary>
-    public string StorageKey { get; private set; } = string.Empty;
+    /// <summary>Object storage key. The file itself never touches application disk (REQ-CONT-03).
+    /// Null only for <see cref="DocumentType.Text"/> — see <see cref="ContentType"/>.</summary>
+    public string? StorageKey { get; private set; }
 
-    public long SizeBytes { get; private set; }
+    /// <summary>Null only for <see cref="DocumentType.Text"/> — see <see cref="ContentType"/>.</summary>
+    public long? SizeBytes { get; private set; }
 
     public int Version { get; private set; }
 
@@ -40,6 +44,14 @@ public sealed class Document
     /// downstream stats (e.g. the learning-streak "hours" figure) only ever sum real, trainer-
     /// provided durations rather than a fabricated estimate.</summary>
     public int? DurationMinutes { get; private set; }
+
+    /// <summary>Trainer-entered PDF page count (2026-08-25 lesson-type redesign) — same reasoning
+    /// as <see cref="DurationMinutes"/>: no PDF-parsing capability exists in this stack, so this
+    /// stays null until a trainer sets it rather than being guessed from file size.</summary>
+    public int? PageCount { get; private set; }
+
+    /// <summary>Pull-quote, meaningful for <see cref="DocumentType.Text"/> lessons.</summary>
+    public string? Quote { get; private set; }
 
     private Document()
     {
@@ -69,6 +81,26 @@ public sealed class Document
         };
     }
 
+    /// <summary>A fileless lesson (2026-08-25 lesson-type redesign) — <see cref="TranscriptText"/>
+    /// doubles as the lesson body here, same "written content of the lesson" semantics as a video
+    /// transcript, just with nothing to transcribe. No <see cref="ContentType"/>/<see
+    /// cref="StorageKey"/>/<see cref="SizeBytes"/>, since there is no file.</summary>
+    public static Document CreateTextLesson(Guid moduleId, string title, string bodyText, string? quote, Guid? uploadedByUserId)
+    {
+        return new Document
+        {
+            Id = Guid.NewGuid(),
+            ModuleId = moduleId,
+            Title = title,
+            FileType = DocumentType.Text,
+            TranscriptText = bodyText,
+            Quote = quote,
+            Version = 1,
+            UploadedAtUtc = DateTime.UtcNow,
+            UploadedByUserId = uploadedByUserId,
+        };
+    }
+
     /// <summary>Replaces the current file with a new one (REQ-CONT-06), bumping <see
     /// cref="Version"/>. The caller is responsible for archiving the pre-replacement state as a
     /// <see cref="DocumentVersion"/> before calling this, since this method only knows the new
@@ -85,13 +117,16 @@ public sealed class Document
     }
 
     public void UpdateLessonDetails(
-        string title, string? transcriptText, string? summaryText, string? keyTakeaway, int? durationMinutes)
+        string title, string? transcriptText, string? summaryText, string? keyTakeaway,
+        int? durationMinutes, int? pageCount, string? quote)
     {
         Title = title;
         TranscriptText = transcriptText;
         SummaryText = summaryText;
         KeyTakeaway = keyTakeaway;
         DurationMinutes = durationMinutes;
+        PageCount = pageCount;
+        Quote = quote;
     }
 
     public static DocumentType InferFileType(string contentType)
@@ -104,6 +139,11 @@ public sealed class Document
         if (contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
         {
             return DocumentType.Video;
+        }
+
+        if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        {
+            return DocumentType.Image;
         }
 
         if (contentType.Contains("presentation", StringComparison.OrdinalIgnoreCase)

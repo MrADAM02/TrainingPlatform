@@ -21,7 +21,9 @@ public sealed record UpdateDocumentLessonDetailsCommand(
     string? TranscriptText,
     string? SummaryText,
     string? KeyTakeaway,
-    int? DurationMinutes) : ICommand;
+    int? DurationMinutes,
+    int? PageCount,
+    string? Quote) : ICommand;
 
 public sealed class UpdateDocumentLessonDetailsCommandValidator : AbstractValidator<UpdateDocumentLessonDetailsCommand>
 {
@@ -30,6 +32,7 @@ public sealed class UpdateDocumentLessonDetailsCommandValidator : AbstractValida
         RuleFor(c => c.DocumentId).NotEmpty();
         RuleFor(c => c.Title).NotEmpty().MaximumLength(200);
         RuleFor(c => c.DurationMinutes).GreaterThan(0).When(c => c.DurationMinutes.HasValue);
+        RuleFor(c => c.PageCount).GreaterThan(0).When(c => c.PageCount.HasValue);
     }
 }
 
@@ -57,7 +60,8 @@ public sealed class UpdateDocumentLessonDetailsCommandHandler(
         }
 
         document.UpdateLessonDetails(
-            command.Title, command.TranscriptText, command.SummaryText, command.KeyTakeaway, command.DurationMinutes);
+            command.Title, command.TranscriptText, command.SummaryText, command.KeyTakeaway,
+            command.DurationMinutes, command.PageCount, command.Quote);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         await activityLog.LogAsync(

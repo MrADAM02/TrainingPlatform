@@ -119,8 +119,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             entity.ToTable("documents");
             entity.HasKey(d => d.Id);
             entity.Property(d => d.Title).IsRequired().HasMaxLength(200);
-            entity.Property(d => d.ContentType).IsRequired().HasMaxLength(200);
-            entity.Property(d => d.StorageKey).IsRequired().HasMaxLength(1000);
+            // Nullable, not IsRequired(): a Text lesson (DocumentType.Text) has no file at all.
+            entity.Property(d => d.ContentType).HasMaxLength(200);
+            entity.Property(d => d.StorageKey).HasMaxLength(1000);
             entity.HasIndex(d => d.ModuleId);
             entity.HasOne<Module>()
                 .WithMany()

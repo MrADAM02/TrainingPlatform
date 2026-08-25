@@ -7,11 +7,12 @@ using TrainingPlatform.Application.Abstractions.Storage;
 using TrainingPlatform.Domain.Activity;
 using TrainingPlatform.Domain.Common;
 using TrainingPlatform.Domain.Content;
-using TrainingPlatform.Domain.Enrollments;
 
 namespace TrainingPlatform.Application.Content.Documents.GetDocumentDownloadUrl;
 
-/// <summary>Authorization is checked before a signed URL is ever issued (REQ-CONT-05).</summary>
+/// <summary>Authorization is checked before a signed URL is ever issued (REQ-CONT-05). Not valid
+/// for <see cref="DocumentType.Text"/> lessons — those have no file; see
+/// <c>MarkLessonViewedCommand</c> for the equivalent trigger on that path.</summary>
 public sealed record GetDocumentDownloadUrlQuery(Guid DocumentId) : IQuery<string>;
 
 public sealed class GetDocumentDownloadUrlQueryHandler(
@@ -29,6 +30,11 @@ public sealed class GetDocumentDownloadUrlQueryHandler(
             return Result.Failure<string>(ContentErrors.DocumentNotFound(query.DocumentId));
         }
 
+        if (document.StorageKey is null)
+        {
+            return Result.Failure<string>(ContentErrors.DocumentHasNoFile);
+        }
+
         var module = await dbContext.Modules.AsNoTracking()
             .SingleOrDefaultAsync(m => m.Id == document.ModuleId, cancellationToken);
         var course = module is null
@@ -40,7 +46,7 @@ public sealed class GetDocumentDownloadUrlQueryHandler(
             return Result.Failure<string>(ContentErrors.CourseNotAccessible);
         }
 
-        await RecordProgressIfEnrolledAsync(course, document.Id, cancellationToken);
+        await LessonProgressService.RecordProgressIfEnrolledAsync(course, document.Id, dbContext, currentUser, cancellationToken);
 
         var url = await fileStorage.GetDownloadUrlAsync(document.StorageKey, cancellationToken);
 
@@ -48,33 +54,5 @@ public sealed class GetDocumentDownloadUrlQueryHandler(
             currentUser.UserId, ActivityActions.DocumentDownloaded, "Document", document.Id.ToString(), cancellationToken);
 
         return url;
-    }
-
-    /// <summary>REQ-ENR-02/03: consuming a document records progress for the caller's own
-    /// enrollment (no-op for Admin/Trainer previewing via ownership, since they have none), and
-    /// once every document in the course has been consumed the enrollment is auto-completed and
-    /// a certificate is issued (REQ-CERT-01).</summary>
-    private async Task RecordProgressIfEnrolledAsync(Course course, Guid documentId, CancellationToken cancellationToken)
-    {
-        var enrollment = await dbContext.Enrollments
-            .SingleOrDefaultAsync(e => e.CourseId == course.Id && e.UserId == currentUser.UserId, cancellationToken);
-
-        if (enrollment is null)
-        {
-            return;
-        }
-
-        var alreadyRecorded = await dbContext.Progresses
-            .AnyAsync(p => p.EnrollmentId == enrollment.Id && p.DocumentId == documentId, cancellationToken);
-
-        if (!alreadyRecorded)
-        {
-            dbContext.Progresses.Add(Progress.Create(enrollment.Id, documentId));
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
-
-        await CourseCompletionService.CompleteAndIssueCertificateIfEligibleAsync(
-            course, enrollment, currentUser.FullName, dbContext, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }
