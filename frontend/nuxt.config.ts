@@ -32,6 +32,7 @@ export default defineNuxtConfig({
   },
 
   i18n: {
+    baseUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3010',
     locales: [
       { code: 'ar', language: 'ar-SA', dir: 'rtl', name: 'العربية', file: 'ar.json' },
       { code: 'en', language: 'en-US', dir: 'ltr', name: 'English', file: 'en.json' },

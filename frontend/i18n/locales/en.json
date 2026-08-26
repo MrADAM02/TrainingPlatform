@@ -59,6 +59,7 @@
     "contentType": "Content type",
     "allCourses": "All courses",
     "allTypes": "All types",
+    "prompt": "Type a keyword or choose a filter to search.",
     "noResults": "No results.",
     "inCourse": "in {course}",
     "uploadedAt": "Uploaded"

@@ -6,8 +6,9 @@ import { documentTypeLabels, documentTypeNames } from '~/types/api'
 const { t } = useI18n()
 const { request } = useApi()
 const toast = useToast()
+const route = useRoute()
 
-const keyword = ref('')
+const keyword = ref(typeof route.query.keyword === 'string' ? route.query.keyword : '')
 const courseId = ref<string | undefined>(undefined)
 const contentType = ref<DocumentTypeName | undefined>(undefined)
 const page = ref(1)
@@ -15,6 +16,7 @@ const pageSize = 20
 
 const results = ref<PaginatedList<DocumentSearchResult> | null>(null)
 const courses = ref<CourseSummary[]>([])
+const hasSearched = ref(false)
 
 async function loadCourses() {
   try {
@@ -37,6 +39,7 @@ const contentTypeItems = computed(() => [
 ])
 
 async function runSearch() {
+  hasSearched.value = true
   const params = new URLSearchParams()
   if (keyword.value) params.set('keyword', keyword.value)
   if (courseId.value) params.set('courseId', courseId.value)
@@ -52,9 +55,16 @@ async function runSearch() {
   }
 }
 
-watch([courseId, contentType, page], runSearch)
+watch([courseId, contentType], () => {
+  page.value = 1
+  runSearch()
+})
+watch(page, runSearch)
 
-await Promise.all([loadCourses(), runSearch()])
+await loadCourses()
+if (keyword.value) {
+  await runSearch()
+}
 
 const resultColumns = computed<TableColumn<DocumentSearchResult>[]>(() => [
   { accessorKey: 'documentTitle', header: t('courses.documents.title') },
@@ -93,7 +103,11 @@ async function downloadDocument(result: DocumentSearchResult) {
       <USelect v-model="contentType" :items="contentTypeItems" :placeholder="t('search.contentType')" />
     </div>
 
-    <p v-if="results && results.items.length === 0" class="text-muted">
+    <p v-if="!hasSearched" class="text-muted">
+      {{ t('search.prompt') }}
+    </p>
+
+    <p v-else-if="results && results.items.length === 0" class="text-muted">
       {{ t('search.noResults') }}
     </p>
 

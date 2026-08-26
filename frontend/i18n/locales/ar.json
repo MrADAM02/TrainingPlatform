@@ -59,6 +59,7 @@
     "contentType": "نوع المحتوى",
     "allCourses": "جميع الدورات",
     "allTypes": "جميع الأنواع",
+    "prompt": "اكتب كلمة مفتاحية أو اختر عامل تصفية للبحث.",
     "noResults": "لا توجد نتائج.",
     "inCourse": "في {course}",
     "uploadedAt": "تاريخ الرفع"

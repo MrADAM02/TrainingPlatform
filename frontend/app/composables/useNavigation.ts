@@ -23,7 +23,6 @@ export function useNavigation(): ComputedRef<AppNavGroups> {
     main: [
       { labelKey: 'nav.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
       { labelKey: 'nav.courses', icon: 'i-lucide-book-open', to: '/courses' },
-      { labelKey: 'nav.search', icon: 'i-lucide-search', to: '/search' },
       { labelKey: 'nav.certificates', icon: 'i-lucide-award', to: '/certificates' },
       { labelKey: 'nav.library', icon: 'i-lucide-bookmark', to: '/library', badge: bookmarkCount.value || undefined },
     ],
