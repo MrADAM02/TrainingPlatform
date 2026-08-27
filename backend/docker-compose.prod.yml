@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: training_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  api:
+    image: ghcr.io/mradam02/trainingplatform-api:${API_VERSION:?API_VERSION must be set}
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__Database: >-
+        Host=postgres;
+        Port=5432;
+        Database=training_platform;
+        Username=postgres;
+        Password=${POSTGRES_PASSWORD}
+
+      Jwt__Key: ${JWT_KEY:?JWT_KEY must be set}
+
+      Cors__AllowedOrigins__0: ${CORS_ORIGIN:?CORS_ORIGIN must be set}
+
+      Seed__AdminEmail: ${SEED_ADMIN_EMAIL:?SEED_ADMIN_EMAIL must be set}
+      Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:?SEED_ADMIN_PASSWORD must be set}
+
+      Storage__BucketName: ${STORAGE_BUCKET:?STORAGE_BUCKET must be set}
+      Storage__ServiceUrl: ${STORAGE_SERVICE_URL:?STORAGE_SERVICE_URL must be set}
+      Storage__AccessKey: ${STORAGE_ACCESS_KEY:?STORAGE_ACCESS_KEY must be set}
+      Storage__SecretKey: ${STORAGE_SECRET_KEY:?STORAGE_SECRET_KEY must be set}
+      # Region/ForcePathStyle already default sensibly in appsettings.json (us-east-1 / true) —
+      # only override via .env if your Hetzner Object Storage bucket needs something different.
+      Storage__Region: ${STORAGE_REGION:-us-east-1}
+      Storage__ForcePathStyle: ${STORAGE_FORCE_PATH_STYLE:-true}
+
+    ports:
+      - "127.0.0.1:5000:8080"
+
+volumes:
+  postgres-data:

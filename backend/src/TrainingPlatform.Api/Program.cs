@@ -47,6 +47,8 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+builder.Services.AddHealthChecks();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -73,8 +75,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
 
-    using var scope = app.Services.CreateScope();
+using (var scope = app.Services.CreateScope())
+{
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await dbContext.Database.MigrateAsync();
     await DbSeeder.SeedAsync(scope.ServiceProvider);
@@ -98,5 +102,6 @@ app.MapSearchEndpoints();
 app.MapCertificateEndpoints();
 app.MapQuizEndpoints();
 app.MapReportEndpoints();
+app.MapHealthChecks("/health");
 
 app.Run();

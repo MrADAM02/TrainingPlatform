@@ -35,8 +35,8 @@ backend/    ASP.NET Core API (.NET 10) — Clean Architecture: Domain / Applicat
 frontend/   Nuxt 4 (SSR) — Pinia, @nuxtjs/i18n (Arabic RTL default / English), @nuxt/ui
 ```
 
-The two are deployed independently (backend as a container, frontend as a static build) and have
-no build-time dependency on each other.
+The two are deployed independently (backend as a Docker container, frontend as an SSR app on
+Netlify) and have no build-time dependency on each other.
 
 ## Prerequisites
 
@@ -115,3 +115,59 @@ storage), `load-test.js` (k6 load test against core read endpoints).
 
 GitHub Actions (`.github/workflows/`) builds and lints both projects on push/PR to `main`, scoped
 by path so backend and frontend changes don't trigger each other's pipeline.
+`deploy-backend.yml` additionally builds/publishes/deploys the API on every push to `main` that
+touches `backend/**` — see below.
+
+## Deploying to a server
+
+Every push to `main` that touches `backend/**` builds the API image, publishes it to GitHub
+Container Registry (`ghcr.io/mradam02/trainingplatform-api`), then SSHes into the server and
+redeploys — see `.github/workflows/deploy-backend.yml`. The server runs in `Production` mode: no
+Swagger — migrations and admin seeding still apply automatically on every boot (same
+`DbSeeder`/`MigrateAsync` call as local dev, just driven by real env vars instead of
+`appsettings.Development.json`).
+
+The frontend is **not** part of this pipeline — it's deployed separately on Netlify.
+
+**One-time server setup** (assumes the VM, Docker, and nginx already exist):
+
+```bash
+mkdir -p /opt/trainingplatform && cd /opt/trainingplatform
+# copy docker-compose.prod.yml and .env.production.example here (scp, or a shallow git clone)
+cp .env.production.example .env
+# edit .env: POSTGRES_PASSWORD, JWT_KEY (openssl rand -base64 48), CORS_ORIGIN (the Netlify
+# URL), SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD, and the real Hetzner Object Storage credentials
+```
+
+Create the Hetzner Object Storage bucket once, from anywhere with the credentials (not necessarily
+the server):
+
+```bash
+STORAGE_SERVICE_URL=https://<region>.your-objectstorage.com \
+STORAGE_ACCESS_KEY=... STORAGE_SECRET_KEY=... STORAGE_BUCKET=training-platform \
+  backend/scripts/setup-object-storage.sh
+```
+
+First deploy — either push to `main`, or smoke-test manually on the server before trusting CI:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+curl http://127.0.0.1:5000/health   # should return 200
+```
+
+**One-time GitHub setup** — add these as repo secrets (Settings → Secrets and variables →
+Actions): `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`. After the first successful `publish`
+run, flip the `trainingplatform-api` GHCR package to Public (repo → Packages → package settings)
+so the server can pull it without authenticating.
+
+**Reverse proxy / TLS** — nginx already runs on the server; `backend/deploy/nginx/lms-api.jab-eri.org.conf`
+is the site config for `lms-api.jab-eri.org` (points at the API container's `127.0.0.1:5000`
+binding). Copy it into `/etc/nginx/sites-available/`, symlink into `sites-enabled/`, then:
+
+```bash
+sudo certbot --nginx -d lms-api.jab-eri.org
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Once the Netlify app has a real URL, update `CORS_ORIGIN` in the server's `.env` (redeploy to pick
+it up) and point Netlify's `NUXT_PUBLIC_API_BASE` at `https://lms-api.jab-eri.org/api/v1`.
