@@ -18,12 +18,41 @@ services:
       retries: 10
       start_period: 10s
 
+  # Self-hosted object storage, standing in for real Hetzner Object Storage (blocked for now
+  # by an account issue on that side). Fronted publicly via nginx + certbot at
+  # lms-storage.jab-eri.org, since uploads/downloads use presigned URLs the *browser* hits
+  # directly — this can't be internal-only like postgres. Swapping to real Hetzner Object
+  # Storage later is just changing STORAGE_SERVICE_URL/ACCESS_KEY/SECRET_KEY in .env and
+  # removing this service — no application code changes.
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+
+    environment:
+      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY:?STORAGE_ACCESS_KEY must be set}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_KEY:?STORAGE_SECRET_KEY must be set}
+
+    volumes:
+      - minio-data:/data
+
+    ports:
+      - "127.0.0.1:9000:9000"
+
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     image: ghcr.io/mradam02/trainingplatform-api:${API_VERSION:?API_VERSION must be set}
     restart: unless-stopped
 
     depends_on:
       postgres:
+        condition: service_healthy
+      minio:
         condition: service_healthy
 
     environment:
@@ -54,7 +83,8 @@ services:
       Storage__ForcePathStyle: ${STORAGE_FORCE_PATH_STYLE:-true}
 
     ports:
-      - "127.0.0.1:5000:8080"
+      - "127.0.0.1:5001:8080"
 
 volumes:
   postgres-data:
+  minio-data:

@@ -139,20 +139,29 @@ cp .env.production.example .env
 # URL), SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD, and the real Hetzner Object Storage credentials
 ```
 
-Create the Hetzner Object Storage bucket once, from anywhere with the credentials (not necessarily
-the server):
+**Object storage**: currently self-hosted MinIO (`docker-compose.prod.yml`'s `minio` service),
+standing in for real Hetzner Object Storage until an account issue on that side is resolved —
+switching later is just changing three `.env` values and removing the `minio` service, no
+application code changes. Because uploads/downloads use presigned URLs the *browser* hits
+directly (not routed through the API), MinIO needs its own public HTTPS endpoint, not just an
+internal container — see the reverse proxy step below for `lms-storage.jab-eri.org`.
+
+Once MinIO is up (after the first `docker compose up -d` below), create the bucket:
 
 ```bash
-STORAGE_SERVICE_URL=https://<region>.your-objectstorage.com \
+STORAGE_SERVICE_URL=http://127.0.0.1:9000 \
 STORAGE_ACCESS_KEY=... STORAGE_SECRET_KEY=... STORAGE_BUCKET=training-platform \
   backend/scripts/setup-object-storage.sh
 ```
+
+(Run this on the server itself, against the local port — no need to go through the public
+`lms-storage.jab-eri.org` domain for setup.)
 
 First deploy — either push to `main`, or smoke-test manually on the server before trusting CI:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
-curl http://127.0.0.1:5000/health   # should return 200
+curl http://127.0.0.1:5001/health   # should return 200
 ```
 
 **One-time GitHub setup** — add these as repo secrets (Settings → Secrets and variables →
@@ -160,12 +169,16 @@ Actions): `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`. After the first succes
 run, flip the `trainingplatform-api` GHCR package to Public (repo → Packages → package settings)
 so the server can pull it without authenticating.
 
-**Reverse proxy / TLS** — nginx already runs on the server; `backend/deploy/nginx/lms-api.jab-eri.org.conf`
-is the site config for `lms-api.jab-eri.org` (points at the API container's `127.0.0.1:5000`
-binding). Copy it into `/etc/nginx/sites-available/`, symlink into `sites-enabled/`, then:
+**Reverse proxy / TLS** — nginx already runs on the server. Two site configs, one per public
+domain: `backend/deploy/nginx/lms-api.jab-eri.org.conf` (API, points at `127.0.0.1:5001` — `5000`
+was already taken on this server by `jobboard-api-1`) and
+`backend/deploy/nginx/lms-storage.jab-eri.org.conf` (MinIO, points at `127.0.0.1:9000`, with the
+extra directives MinIO's own nginx guidance recommends — unbuffered proxying, no body-size cap,
+longer timeouts for large video uploads). Copy both into `/etc/nginx/sites-available/`, symlink
+both into `sites-enabled/`, then:
 
 ```bash
-sudo certbot --nginx -d lms-api.jab-eri.org
+sudo certbot --nginx -d lms-api.jab-eri.org -d lms-storage.jab-eri.org
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
