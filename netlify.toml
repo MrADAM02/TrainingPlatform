@@ -1,7 +1,6 @@
 [build]
   base = "frontend"
   command = "pnpm install && pnpm build"
-  publish = ".output/public"
 
 [build.environment]
   NODE_VERSION = "24"
