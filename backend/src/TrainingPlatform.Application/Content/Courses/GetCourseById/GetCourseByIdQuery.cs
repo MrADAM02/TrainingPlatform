@@ -34,13 +34,11 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
         var isEnrolled = enrollment is not null;
         var canDownload = CourseAccess.CanManage(course, currentUser) || isEnrolled;
 
-        var completedDocumentIds = enrollment is null
+        var progressByDocumentId = enrollment is null
             ? []
-            : (await dbContext.Progresses.AsNoTracking()
+            : await dbContext.Progresses.AsNoTracking()
                 .Where(p => p.EnrollmentId == enrollment.Id)
-                .Select(p => p.DocumentId)
-                .ToListAsync(cancellationToken))
-            .ToHashSet();
+                .ToDictionaryAsync(p => p.DocumentId, p => p.LastPositionSeconds, cancellationToken);
 
         var modules = await dbContext.Modules.AsNoTracking()
             .Where(m => m.CourseId == course.Id)
@@ -69,7 +67,8 @@ public sealed class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, I
                     .Select(d => new DocumentSummary(
                         d.Id, d.ModuleId, d.Title, d.FileType, d.ContentType, d.SizeBytes, d.Version, d.UploadedAtUtc,
                         d.TranscriptText, d.SummaryText, d.KeyTakeaway, d.DurationMinutes, d.PageCount, d.Quote,
-                        completedDocumentIds.Contains(d.Id)))
+                        progressByDocumentId.ContainsKey(d.Id),
+                        progressByDocumentId.GetValueOrDefault(d.Id)))
                     .ToList(),
                 quizzes
                     .Where(q => q.ModuleId == m.Id)

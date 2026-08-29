@@ -148,7 +148,7 @@ async function downloadDocument(doc: DocumentSummary) {
               <ul v-if="moduleById(item.value as string)!.documents.length > 0" class="space-y-1">
                 <li
                   v-for="doc in moduleById(item.value as string)!.documents" :key="doc.id"
-                  class="flex items-center justify-between gap-3 p-3 rounded-lg hover:bg-elevated/50 transition-colors"
+                  class="flex items-center justify-between flex-wrap gap-3 gap-y-2 p-3 rounded-lg hover:bg-elevated/50 transition-colors"
                 >
                   <div class="flex items-center gap-3 min-w-0">
                     <div class="flex items-center justify-center size-9 rounded-lg bg-primary/10 text-primary shrink-0">
@@ -190,7 +190,7 @@ async function downloadDocument(doc: DocumentSummary) {
                 <ul class="space-y-1">
                   <li
                     v-for="quiz in moduleById(item.value as string)!.quizzes" :key="quiz.id"
-                    class="flex items-center justify-between gap-3 p-3 rounded-lg hover:bg-elevated/50 transition-colors"
+                    class="flex items-center justify-between flex-wrap gap-3 gap-y-2 p-3 rounded-lg hover:bg-elevated/50 transition-colors"
                   >
                     <div class="flex items-center gap-3 min-w-0">
                       <div class="flex items-center justify-center size-9 rounded-lg bg-secondary/10 text-secondary shrink-0">

@@ -23,25 +23,48 @@ internal static class LessonProgressService
         IUserContext currentUser,
         CancellationToken cancellationToken)
     {
-        var enrollment = await dbContext.Enrollments
-            .SingleOrDefaultAsync(e => e.CourseId == course.Id && e.UserId == currentUser.UserId, cancellationToken);
+        var enrollment = await FindEnrollmentAsync(course, dbContext, currentUser, cancellationToken);
 
         if (enrollment is null)
         {
             return;
         }
 
-        var alreadyRecorded = await dbContext.Progresses
-            .AnyAsync(p => p.EnrollmentId == enrollment.Id && p.DocumentId == documentId, cancellationToken);
-
-        if (!alreadyRecorded)
-        {
-            dbContext.Progresses.Add(Progress.Create(enrollment.Id, documentId));
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
+        await GetOrCreateProgressAsync(enrollment.Id, documentId, dbContext, cancellationToken);
 
         await CourseCompletionService.CompleteAndIssueCertificateIfEligibleAsync(
             course, enrollment, currentUser.FullName, dbContext, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>The caller's own enrollment for this course, or null if they're not enrolled
+    /// (an Admin/Trainer previewing via ownership has none, and there's nothing to record
+    /// progress against for them) — the boundary every progress-touching operation shares.</summary>
+    public static Task<Enrollment?> FindEnrollmentAsync(
+        Course course, IApplicationDbContext dbContext, IUserContext currentUser, CancellationToken cancellationToken)
+    {
+        return dbContext.Enrollments
+            .SingleOrDefaultAsync(e => e.CourseId == course.Id && e.UserId == currentUser.UserId, cancellationToken);
+    }
+
+    /// <summary>Used by both the one-time "consumed this document" recording above and
+    /// <c>SaveVideoProgressCommand</c> (2026-08-29), which needs the same row to update a
+    /// playback position on — a video's Progress row already exists by the time playback starts
+    /// (created on the first download-url fetch), but this stays defensive rather than assuming
+    /// that ordering always holds.</summary>
+    public static async Task<Progress> GetOrCreateProgressAsync(
+        Guid enrollmentId, Guid documentId, IApplicationDbContext dbContext, CancellationToken cancellationToken)
+    {
+        var progress = await dbContext.Progresses
+            .SingleOrDefaultAsync(p => p.EnrollmentId == enrollmentId && p.DocumentId == documentId, cancellationToken);
+
+        if (progress is null)
+        {
+            progress = Progress.Create(enrollmentId, documentId);
+            dbContext.Progresses.Add(progress);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return progress;
     }
 }

@@ -123,9 +123,15 @@ async function downloadDocument(result: DocumentSearchResult) {
           {{ formatDate(row.original.uploadedAtUtc) }}
         </template>
         <template #actions-cell="{ row }">
-          <div class="flex justify-end">
+          <div class="flex justify-end gap-2">
             <UButton
               size="xs" variant="soft" :disabled="!row.original.canDownload"
+              :icon="row.original.fileType === 1 ? 'i-lucide-play' : row.original.fileType === 5 ? 'i-lucide-file-text' : 'i-lucide-book-open'"
+              :label="row.original.fileType === 1 ? t('courses.documents.watch') : row.original.fileType === 5 ? t('courses.documents.read') : t('courses.documents.viewLesson')"
+              :to="row.original.canDownload ? `/lessons/${row.original.documentId}?courseId=${row.original.courseId}` : undefined"
+            />
+            <UButton
+              v-if="row.original.fileType !== 5" size="xs" variant="soft" :disabled="!row.original.canDownload"
               :label="t('courses.documents.download')" @click="downloadDocument(row.original)"
             />
           </div>

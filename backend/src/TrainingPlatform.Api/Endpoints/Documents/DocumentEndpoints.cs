@@ -7,6 +7,7 @@ using TrainingPlatform.Application.Content.Documents.GetDocumentVersions;
 using TrainingPlatform.Application.Content.Documents.MarkLessonViewed;
 using TrainingPlatform.Application.Content.Documents.ReplaceDocumentFile;
 using TrainingPlatform.Application.Content.Documents.RequestDocumentUpload;
+using TrainingPlatform.Application.Content.Documents.SaveVideoProgress;
 using TrainingPlatform.Application.Content.Documents.UpdateDocumentLessonDetails;
 
 namespace TrainingPlatform.Api.Endpoints.Documents;
@@ -49,6 +50,13 @@ public static class DocumentEndpoints
         documents.MapPost("/{id:guid}/mark-viewed", async (Guid id, ISender sender, CancellationToken ct) =>
         {
             var result = await sender.Send(new MarkLessonViewedCommand(id), ct);
+            return result.IsSuccess ? Results.NoContent() : CustomResults.Problem(result);
+        });
+
+        documents.MapPost("/{id:guid}/video-progress", async (
+            Guid id, SaveVideoProgressRequest request, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new SaveVideoProgressCommand(id, request.PositionSeconds), ct);
             return result.IsSuccess ? Results.NoContent() : CustomResults.Problem(result);
         });
 
@@ -106,3 +114,5 @@ public sealed record UpdateLessonDetailsRequest(
     int? DurationMinutes, int? PageCount, string? Quote);
 
 public sealed record CreateTextLessonRequest(string Title, string BodyText, string? Quote);
+
+public sealed record SaveVideoProgressRequest(int PositionSeconds);

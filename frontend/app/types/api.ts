@@ -94,6 +94,7 @@ export interface DocumentSummary {
   pageCount: number | null
   quote: string | null
   isCompleted: boolean
+  lastPositionSeconds: number | null
 }
 
 export interface QuizSummary {
@@ -134,7 +135,7 @@ export interface UploadTicket {
 
 // Sent as the query-string value for the search content-type filter — ASP.NET Core's minimal
 // API model binder resolves nullable enum query params by name, not by number.
-export const documentTypeNames = ['Pdf', 'Video', 'Presentation', 'Other'] as const
+export const documentTypeNames = ['Pdf', 'Video', 'Presentation', 'Other', 'Image', 'Text'] as const
 export type DocumentTypeName = typeof documentTypeNames[number]
 
 export type EnrollmentStatus = 0 | 1 // Active | Completed — matches the C# enum's declaration order

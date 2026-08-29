@@ -12,6 +12,12 @@ public sealed class Progress
 
     public DateTime CompletedAtUtc { get; private set; }
 
+    /// <summary>Last known video playback position, in seconds, so a trainee can resume where
+    /// they left off. Null for non-video documents or if playback was never reported.</summary>
+    public int? LastPositionSeconds { get; private set; }
+
+    public DateTime? LastWatchedAtUtc { get; private set; }
+
     private Progress()
     {
     }
@@ -25,5 +31,16 @@ public sealed class Progress
             DocumentId = documentId,
             CompletedAtUtc = DateTime.UtcNow,
         };
+    }
+
+    public void UpdatePlaybackPosition(int positionSeconds)
+    {
+        if (positionSeconds < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(positionSeconds), "Position cannot be negative.");
+        }
+
+        LastPositionSeconds = positionSeconds;
+        LastWatchedAtUtc = DateTime.UtcNow;
     }
 }

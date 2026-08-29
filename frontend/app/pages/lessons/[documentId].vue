@@ -183,7 +183,10 @@ function decreaseFontScale() {
         <!-- Video: player + a Video/Transcript/Summary switcher, since all three are genuinely
              different content worth tabbing between. -->
         <template v-if="isVideo">
-          <DocumentVideoPlayer :key="currentLesson.id" :document-id="currentLesson.id" class="mb-4" />
+          <DocumentVideoPlayer
+            :key="currentLesson.id" :document-id="currentLesson.id"
+            :resume-from-seconds="currentLesson.lastPositionSeconds ?? undefined" class="mb-4"
+          />
 
           <div class="flex gap-2 border-b border-default mb-4">
             <button

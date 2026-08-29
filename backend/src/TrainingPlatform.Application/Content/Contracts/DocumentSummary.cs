@@ -17,4 +17,5 @@ public sealed record DocumentSummary(
     int? DurationMinutes,
     int? PageCount,
     string? Quote,
-    bool IsCompleted);
+    bool IsCompleted,
+    int? LastPositionSeconds);
